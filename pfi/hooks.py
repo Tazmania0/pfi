@@ -32,8 +32,8 @@ doc_events = {
 }
 fixtures = ["Custom Field", "Print Format"]
 
-app_include_js = "/assets/pfi/js/work_order.js"
-app_include_css = "/assets/pfi/css/work_order.css"
+app_include_js = "public/js/work_order_custom.js"
+app_include_css = "public/css/work_order.css"
 
 # Include JS for Work Order and Job Card (client-side logic)
 
