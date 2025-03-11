@@ -1,0 +1,32 @@
+<style>
+    .a8-card {
+        width: 74mm;
+        height: 105mm;
+        border: 1px solid #ccc;
+        padding: 5px;
+        page-break-inside: avoid;
+    }
+    .barcode svg {
+        width: 100%;
+        height: 40px;
+    }
+</style>
+
+<div class="a8-card">
+    <h4>Job Card: {{ doc.name }}</h4>
+    <p>Work Order: {{ doc.work_order }}</p>
+    <p>Item: {{ doc.production_item }}</p>
+    <p>Customer PO: {{ doc.customer_po }}</p>
+    <p>Qty: {{ doc.for_quantity }}</p>
+    <div class="barcode">
+        <svg id="barcode-{{ doc.name }}"></svg>
+    </div>
+</div>
+
+<script src="/assets/pfi/js/jsbarcode.min.js"></script>
+<script>
+JsBarcode("#barcode-{{ doc.name }}", "{{ doc.name }}", {
+    format: "CODE128",
+    displayValue: true
+});
+</script>
