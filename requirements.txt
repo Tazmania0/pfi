@@ -1,0 +1,3 @@
+python-barcode==0.14.0
+frappe
+erpnext

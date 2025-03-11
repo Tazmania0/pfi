@@ -1,0 +1,8 @@
+include README.md
+
+include requirements.txt
+recursive-include pfi *
+recursive-include pfi/public *
+recursive-include pfi/config *
+recursive-include pfi/custom *
+recursive-include pfi/print_formats *

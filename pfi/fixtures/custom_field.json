@@ -1,0 +1,25 @@
+[
+    {
+        "doctype": "Custom Field",
+        "dt": "Work Order",
+        "fieldname": "cutting_matrix",
+        "label": "Cutting Matrix",
+        "fieldtype": "Table",
+        "options": "Cutting Matrix Table",
+        "insert_after": "planned_start_date"
+    },
+	  {
+    "doctype": "Custom Field",
+    "fields": [
+      {
+        "fieldname": "is_service_bom",
+        "label": "Service Only BOM",
+        "fieldtype": "Check",
+        "insert_after": "with_operations",
+        "default": 0,
+        "description": "Tick if BOM has no raw materials, only operations"
+      }
+    ],
+    "dt": "BOM"
+  }
+]

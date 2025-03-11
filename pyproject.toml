@@ -1,0 +1,15 @@
+[project]
+name = "pfi"
+version = "1.0.0"
+description = "PFI Custom App for ERPNext"
+authors = [
+    { name="PFI Team", email="your@email.com" }
+]
+license = {text = "MIT"}
+
+[tool.setuptools]
+packages = ["pfi"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
