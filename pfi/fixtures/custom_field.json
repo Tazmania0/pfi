@@ -1,25 +1,54 @@
 [
-    {
-        "doctype": "Custom Field",
-        "dt": "Work Order",
-        "fieldname": "cutting_matrix",
-        "label": "Cutting Matrix",
-        "fieldtype": "Table",
-        "options": "Cutting Matrix Table",
-        "insert_after": "planned_start_date"
-    },
-	  {
+  {
     "doctype": "Custom Field",
-    "fields": [
-      {
-        "fieldname": "is_service_bom",
-        "label": "Service Only BOM",
-        "fieldtype": "Check",
-        "insert_after": "with_operations",
-        "default": 0,
-        "description": "Tick if BOM has no raw materials, only operations"
-      }
-    ],
-    "dt": "BOM"
+    "name": "Work Order-customer_po",  
+    "dt": "Work Order", 
+    "fieldname": "customer_po",
+    "label": "Customer PO",
+    "fieldtype": "Link",
+    "options": "Sales Order"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Work Order-planned_quantity_table",
+    "dt": "Work Order",
+    "fieldname": "planned_quantity_table",
+    "label": "Planned Quantity Table",
+    "fieldtype": "Table",
+    "options": "Planned Quantity Table"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Work Order-cutting_matrix_table",
+    "dt": "Work Order",
+    "fieldname": "cutting_matrix_table",
+    "label": "Cutting Matrix Table",
+    "fieldtype": "Table",
+    "options": "Cutting Matrix Table"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Job Card-customer_po",
+    "dt": "Job Card",
+    "fieldname": "customer_po",
+    "label": "Customer PO",
+    "fieldtype": "Data",
+    "fetch_from": "work_order.customer_po"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Job Card-color",
+    "dt": "Job Card",
+    "fieldname": "color",
+    "label": "Color",
+    "fieldtype": "Data"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Job Card-size",
+    "dt": "Job Card",
+    "fieldname": "size",
+    "label": "Size",
+    "fieldtype": "Data"
   }
 ]

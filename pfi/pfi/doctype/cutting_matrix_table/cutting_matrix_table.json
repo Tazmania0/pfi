@@ -1,0 +1,48 @@
+{
+    "doctype": "DocType",
+    "name": "Cutting Matrix Table",
+    "module": "pfi",
+    "custom": 0,
+    "istable": 1,
+    "is_submittable": 0,
+    "editable_grid": 1,
+    "track_changes": 0,
+    "track_views": 0,
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "autoname": "prompt",
+    "fields": [
+        {
+            "fieldname": "size",
+            "label": "Size",
+            "fieldtype": "Data",
+            "reqd": 0,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "color",
+            "label": "Color",
+            "fieldtype": "Data",
+            "reqd": 0,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "layer_qty",
+            "label": "Layer Quantity",
+            "fieldtype": "Int",
+            "reqd": 0,
+            "in_list_view": 1
+        }
+    ],
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        }
+    ]
+}
+
+
