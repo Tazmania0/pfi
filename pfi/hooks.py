@@ -31,6 +31,14 @@ doc_events = {
 #        "before_save": "pfi.custom_scripts.work_order_validate.before_save"
 #    } 
 }
+
+doc_events = {
+    "Work Order": {
+        "before_save": "pfi.custom_scripts.work_order_customization.before_save",
+        "on_submit": "pfi.custom_scripts.work_order_customization.on_submit"
+    }
+}
+
 doc_events = {
 #    "BOM": {
 #        "before_validate": "pfi.custom_scripts.bom_events.validate_bom"
@@ -43,8 +51,18 @@ override_doctype_class = {
 }
 
 include_js = {
-    "public/js/pfi.js"
+    "public/js/pfi.js",
+    "public/js/JsBarcode.all.min.js" 
 }
+
+fixtures = [
+    {"dt": "Custom Field", "filters": [["module", "=", "PFI"]]},
+    {"dt": "Property Setter", "filters": [["module", "=", "PFI"]]},
+    "Cutting Matrix Table",
+    "Planned Quantity Table",
+    "Print Format/Job Card A8"
+]
+
 
 # Include JS for Work Order and Job Card (client-side logic)
 
