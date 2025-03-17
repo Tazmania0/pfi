@@ -1,8 +1,8 @@
 [
   {
     "doctype": "Custom Field",
-    "name": "Work Order-customer_po",  // Unique name
-    "dt": "Work Order",  // Target DocType
+    "name": "Work Order-customer_po",  
+    "dt": "Work Order", 
     "fieldname": "customer_po",
     "label": "Customer PO",
     "fieldtype": "Link",
