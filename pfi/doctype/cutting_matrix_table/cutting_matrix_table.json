@@ -1,7 +1,7 @@
 {
     "doctype": "DocType",
     "name": "Cutting Matrix Table",
-    "module": "Manufacturing",
+    "module": "PFI",
     "is_child": 1,
     "istable": 1,
     "fields": [
