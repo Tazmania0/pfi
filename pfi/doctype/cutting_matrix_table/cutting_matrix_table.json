@@ -4,6 +4,8 @@
     "module": "pfi",
     "is_child": 1,
     "istable": 1,
+    "custom": 1,
+    "editable_grid": 1,
     "fields": [
         {
             "fieldname": "color",
