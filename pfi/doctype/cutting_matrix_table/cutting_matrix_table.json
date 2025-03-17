@@ -4,7 +4,7 @@
     "module": "pfi",
     "is_child": 1,
     "istable": 1,
-    "custom": 1,
+    "custom": 0,
     "editable_grid": 1,
     "fields": [
         {
