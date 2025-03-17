@@ -56,8 +56,9 @@ include_js = {
 }
 
 fixtures = [
-    {"dt": "Custom Field", "filters": [["module", "=", "PFI"]]},
+#    {"dt": "Custom Field", "filters": [["module", "=", "PFI"]]},
 #    {"dt": "Property Setter", "filters": [["module", "=", "PFI"]]},
+    "Custom Field",
     "Cutting Matrix Table",
     "Planned Quantity Table",
     "Print Format/Job Card A8"
