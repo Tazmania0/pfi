@@ -1,23 +1,2 @@
 {
-    "doctype": "DocType",
-    "name": "Cutting Matrix Table",
-    "module": "Manufacturing",
-    "istable": 1,
-    "fields": [
-        {
-            "fieldname": "color",
-            "label": "Color",
-            "fieldtype": "Data"
-        },
-        {
-            "fieldname": "size",
-            "label": "Size",
-            "fieldtype": "Data"
-        },
-        {
-            "fieldname": "quantity",
-            "label": "Quantity",
-            "fieldtype": "Int"
-        }
-    ]
 }
