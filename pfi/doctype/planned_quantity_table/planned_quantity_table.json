@@ -1,7 +1,7 @@
 {
     "doctype": "DocType",
     "name": "Planned Quantity Table",
-    "module": "Manufacturing",
+    "module": "PFI",
     "istable": 1,
     "is_child": 1,
     "fields": [
