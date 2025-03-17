@@ -3,6 +3,7 @@
     "name": "Planned Quantity Table",
     "module": "Manufacturing",
     "istable": 1,
+    "is_child": 1,
     "fields": [
         {
             "fieldname": "color",
