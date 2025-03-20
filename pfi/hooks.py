@@ -92,7 +92,7 @@ def get_data():
         # App metadata
         "app_name": "pfi",
         "app_title": "PFI",
-        "app_description = "Custom ERPNext App for Garment Manufacturing and Job Card Customization",
+        "app_description": "Custom ERPNext App for Garment Manufacturing and Job Card Customization",
         
         # Define your module(s)
         "modules": [
