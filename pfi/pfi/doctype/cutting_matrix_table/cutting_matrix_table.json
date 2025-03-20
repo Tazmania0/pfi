@@ -1,7 +1,6 @@
 {
     "doctype": "DocType",
     "name": "Cutting Matrix Table",
-    "module": "Manufacturing",
     "custom": 0,
     "istable": 1,
     "is_submittable": 0,

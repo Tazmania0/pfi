@@ -1,7 +1,6 @@
 {
     "doctype": "DocType",
     "name": "Planned Quantity Table",
-    "module": "Manufacturing",
     "custom": 0,
     "istable": 1,
     "is_submittable": 0,
