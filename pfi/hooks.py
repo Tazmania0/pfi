@@ -11,9 +11,12 @@ app_email = "your@email.com"
 
 app_license = "MIT"
 
-app_version = "1.0.0"
+#app_version = "1.0.0"
 
+# Apps
+# ------------------
 
+# required_apps = []
 
 
 

@@ -1,12 +1,13 @@
 [project]
 name = "pfi"
-version = "1.0.0"
-description = "PFI Custom App for ERPNext"
 authors = [
     { name="PFI Team", email="your@email.com" }
-]
-license = {text = "MIT"}
 
+]
+description = "PFI Custom App for ERPNext"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dynamic = ["version"]
 
 
 [build-system]
