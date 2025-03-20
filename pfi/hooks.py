@@ -81,3 +81,28 @@ doctype_js = {
 after_migrate = [
     "pfi.patches.v1_0_0.add_custom_field_to_bom.execute"
 ]
+
+
+
+# hooks.py
+from frappe import _
+
+def get_data():
+    return {
+        # App metadata
+        "app_name": "pfi",
+        "app_title": "PFI",
+        "app_description = "Custom ERPNext App for Garment Manufacturing and Job Card Customization",
+        
+        # Define your module(s)
+        "modules": [
+            {
+                "label": _("PFI"),  # Display name
+                "items": ["Cutting Matrix Table", "Planned Quantity Table" ]  # List DocTypes/pages in this module
+            }
+        ],
+        
+        # Other hooks (fixtures, doctype_js, etc.)
+        "doctype_js": {"BOM": "public/js/bom.js"},
+        "fixtures": ["Custom Field", "Print Format"]
+    }
