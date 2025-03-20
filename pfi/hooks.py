@@ -1,5 +1,3 @@
-from frappe import _
-
 app_name = "pfi"
 app_title = "PFI"
 app_publisher = "PFI"
