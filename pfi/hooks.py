@@ -18,7 +18,7 @@ app_license = "MIT"
 
 # Include JS only if file exists
 app_include_js = [
-    "js/work_order.js"
+    "public/js/work_order.js"
 ]
 
 doc_events = {
