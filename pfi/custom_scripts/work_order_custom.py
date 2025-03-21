@@ -4,9 +4,32 @@ from frappe.model.document import Document
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 
 def validate_template_item(doc):
-    """Validate template item with variants exists"""
-    if not frappe.db.get_value("Item", doc.production_item, "has_variants"):
-        frappe.throw(_("Work Order must use a Template Item with variants"))
+    """Extended validation with proper error messaging"""
+    if not doc.production_item:
+        return
+    
+    item = frappe.get_cached_doc("Item", doc.production_item)
+    
+    if not item.has_variants:
+        frappe.throw(
+            _("Selected item must be a Template with variants"),
+            title=_("Invalid Item"),
+            exc=frappe.ValidationError
+        )
+        
+    if not any(attr.attribute == "Colour" for attr in item.attributes):
+        frappe.throw(
+            _("Template item must have 'Colour' attribute"),
+            title=_("Missing Attribute"),
+            exc=frappe.ValidationError
+        )
+        
+    if not any(attr.attribute == "Size" for attr in item.attributes):
+        frappe.throw(
+            _("Template item must have 'Size' attribute"),
+            title=_("Missing Attribute"),
+            exc=frappe.ValidationError
+        )
 
 def validate_planned_quantities(doc):
     """Validate planned quantity table entries"""
@@ -147,7 +170,6 @@ def activate_work_order_overrides():
     WorkOrder.on_submit = on_submit
     frappe.msgprint("PFI Work Order overrides activated")
     
-
 
 # Monkey-patch Work Order hooks
 WorkOrder.before_save = before_save
