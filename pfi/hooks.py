@@ -79,7 +79,10 @@ doctype_js = {
 }
 
 after_migrate = [
+    # Existing BOM patch
     "pfi.patches.v1_0_0.add_custom_field_to_bom.execute"
+    # New Work Order override activation
+    "pfi.work_order_custom.activate_work_order_overrides"
 ]
 
 
@@ -106,3 +109,8 @@ def get_data():
         "doctype_js": {"BOM": "public/js/bom.js"},
         "fixtures": ["Custom Field", "Print Format"]
     }
+
+def after_migrate():
+    # Activate Work Order overrides
+    from pfi.work_order_custom import override_work_order
+    override_work_order()    
