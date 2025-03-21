@@ -35,8 +35,8 @@ doc_events = {
 
 doc_events = {
     "Work Order": {
-        "before_save": "pfi.pfi.custom_scripts.work_order_customization.before_save",
-        "on_submit": "pfi.pfi.custom_scripts.work_order_customization.on_submit"
+        "before_save": "pfi.custom_scripts.work_order_customization.before_save",
+        "on_submit": "pfi.custom_scripts.work_order_customization.on_submit"
     }
 }
 
@@ -48,7 +48,7 @@ doc_events = {
 
 # hooks.py
 override_doctype_class = {
-    "BOM": "pfi.pfi.custom_scripts.bom_service_check.CustomBOM"
+    "BOM": "pfi.custom_scripts.bom_service_check.CustomBOM"
 }
 
 include_js = [
