@@ -4,30 +4,27 @@ from frappe.model.document import Document
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 
 def validate_template_item(doc):
-    """Extended validation with proper error messaging"""
+    """Validate selected item is a proper template with required attributes"""
     if not doc.production_item:
         return
-    
-    item = frappe.get_cached_doc("Item", doc.production_item)
+
+    item = frappe.get_doc("Item", doc.production_item)
     
     if not item.has_variants:
         frappe.throw(
             _("Selected item must be a Template with variants"),
-            title=_("Invalid Item"),
+            title=_("Invalid Item Selection"),
             exc=frappe.ValidationError
         )
-        
-    if not any(attr.attribute == "Colour" for attr in item.attributes):
+    
+    required_attributes = {'Colour', 'Size'}
+    existing_attributes = {attr.attribute for attr in item.attributes}
+    
+    missing = required_attributes - existing_attributes
+    if missing:
         frappe.throw(
-            _("Template item must have 'Colour' attribute"),
-            title=_("Missing Attribute"),
-            exc=frappe.ValidationError
-        )
-        
-    if not any(attr.attribute == "Size" for attr in item.attributes):
-        frappe.throw(
-            _("Template item must have 'Size' attribute"),
-            title=_("Missing Attribute"),
+            _("Missing required attributes: {0}").format(", ".join(missing)),
+            title=_("Template Configuration Error"),
             exc=frappe.ValidationError
         )
 
