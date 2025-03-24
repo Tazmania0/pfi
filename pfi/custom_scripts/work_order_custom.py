@@ -2,6 +2,7 @@ from frappe import _
 import frappe
 from frappe.model.document import Document
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as OriginalWorkOrder
+from frappe import whitelist
 
 class CustomWorkOrder(OriginalWorkOrder):
     
@@ -20,6 +21,7 @@ class CustomWorkOrder(OriginalWorkOrder):
         self.run_original_validations()
 
     # 1. Add method directly to WorkOrder class
+    @whitelist()
     def validate_template_item(self):
         """Server-side validation for template items"""
         if not self.production_item:
