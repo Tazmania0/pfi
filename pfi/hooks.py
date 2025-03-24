@@ -85,7 +85,8 @@ after_migrate = [
     # Existing BOM patch
     "pfi.patches.v1_0_0.add_custom_field_to_bom.execute"
     # New Work Order override activation
-    "pfi.work_order_custom.activate_work_order_overrides"
+    #"pfi.work_order_custom.activate_work_order_overrides"
+    "pfi.patches.v1_0_0.set_work_order_naming_series.execute"
 ]
 
 

@@ -1,4 +1,11 @@
 frappe.ui.form.on('Work Order', {
+	before_load: function(frm) {
+        // Set default naming series
+        if(frm.is_new()) {
+            frm.set_value('naming_series', 'MFG-WO-.YYYY.-');
+        }
+    },
+
     refresh: function(frm) {
         console.debug("Initializing PFI Work Order customization");
         
