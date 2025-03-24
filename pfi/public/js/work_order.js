@@ -1,8 +1,13 @@
 frappe.ui.form.on('Work Order', {
-	before_load: function(frm) {
-        // Set default naming series
+	setup: function(frm) {
+        frm.set_df_property('naming_series', 'read_only', 0);
+    },
+	
+	    before_load: function(frm) {
         if(frm.is_new()) {
-            frm.set_value('naming_series', 'MFG-WO-.YYYY.-');
+            frappe.db.get_single_value("Manufacturing Settings", "default_work_order_naming_series").then(value => {
+                frm.set_value('naming_series', value || 'MFG-WO-.YYYY.-');
+            });
         }
     },
 
