@@ -5,11 +5,9 @@ from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as Ori
 
 class CustomWorkOrder(OriginalWorkOrder):
     
-<<<<<<< HEAD
+
     def __init__(self, *args, **kwargs):
-=======
-     def __init__(self, *args, **kwargs):
->>>>>>> b8d544fce869a8ed7e30a8cd17b83bb45c892d99
+
         super().__init__(*args, **kwargs)
         frappe.msgprint("Custom Work Order Class Active!")  # Debug
     
