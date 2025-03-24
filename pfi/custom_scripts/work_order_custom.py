@@ -80,25 +80,6 @@ class CustomWorkOrder(OriginalWorkOrder):
          # Call original before_save
         super().before_save()
     
-    def on_submit(doc, method):
-        """Override on_submit with custom logic"""
-        # New submission logic
-        generate_job_cards(self)
-        
-        # Call original on_submit
-        super().on_submit()
-    
-    def validate_template_item(self):
-        """Template item validation"""
-        if not frappe.db.get_value("Item", self.production_item, "has_variants"):
-            frappe.throw(_("Selected item must be a Template with variants"))
-            
-        attributes = frappe.get_all("Item Attribute",
-            filters={"parent": self.production_item},
-            fields=["attribute"]
-        )
-        if not {"Colour", "Size"}.issubset({a.attribute for a in attributes}):
-            frappe.throw(_("Template must have Colour and Size attributes"))
 
     def run_original_validations(self):
         """Preserve original validations"""
