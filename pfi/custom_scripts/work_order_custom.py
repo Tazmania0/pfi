@@ -5,6 +5,10 @@ from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as Ori
 
 class CustomWorkOrder(OriginalWorkOrder):
     
+     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        frappe.msgprint("Custom Work Order Class Active!")  # Debug
+    
     def validate(self):
         """Override validation chain"""
         super().validate()  # Original validation
