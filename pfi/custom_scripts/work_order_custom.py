@@ -12,16 +12,7 @@ class CustomWorkOrder(OriginalWorkOrder):
         super().__init__(*args, **kwargs)
         frappe.msgprint("Custom Work Order Class Active!")  # Debug
     
-    def autoname(self):
-        """Generate name using naming series before validation"""
-        if not self.name:
-            self.name = frappe.generate_hash(length=10)  # Temporary unique ID
-        super().autoname()  # Let ERPNext handle final naming
-        
-    def ensure_naming(self):
-        """Fallback naming if series fails"""
-        if not self.name:
-            self.autoname()
+
     
     def validate(self):
         """Override validation chain"""
