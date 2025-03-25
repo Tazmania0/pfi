@@ -8,25 +8,7 @@
     "fieldtype": "Link",
     "options": "Sales Order"
   },
-  {
-    "doctype": "Custom Field",
-    "name": "Work Order-planned_quantity_table",
-    "dt": "Work Order",
-    "fieldname": "planned_quantity_table",
-    "label": "Planned Quantity Table",
-    "fieldtype": "Table",
-    "options": "Planned Quantity Table"
-  },
-  {
-    "doctype": "Custom Field",
-    "name": "Work Order-cutting_matrix_table",
-    "dt": "Work Order",
-    "fieldname": "cutting_matrix_table",
-    "label": "Cutting Matrix Table",
-    "fieldtype": "Table",
-    "options": "Cutting Matrix Table"
-  },
-  {
+   {
     "doctype": "Custom Field",
     "name": "Job Card-customer_po",
     "dt": "Job Card",

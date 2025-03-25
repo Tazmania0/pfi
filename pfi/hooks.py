@@ -51,7 +51,7 @@ doc_events = {
 # hooks.py
 override_doctype_class = {
     "BOM": "pfi.custom_scripts.bom_service_check.CustomBOM",
-    "Work Order": "pfi.custom_scripts.work_order_custom.CustomWorkOrder"
+#    "Work Order": "pfi.custom_scripts.work_order_custom.CustomWorkOrder"
 }
 
 include_js = [
@@ -86,7 +86,7 @@ after_migrate = [
     "pfi.patches.v1_0_0.add_custom_field_to_bom.execute"
     # New Work Order override activation
     #"pfi.work_order_custom.activate_work_order_overrides"
-    "pfi.patches.v1_0_0.set_naming_defaults.execute"
+    #"pfi.patches.v1_0_0.set_naming_defaults.execute"
 ]
 
 
@@ -101,20 +101,20 @@ def get_data():
         "app_title": "PFI",
         "app_description": "Custom ERPNext App for Garment Manufacturing and Job Card Customization",
         
-        # Define your module(s)
-        "modules": [
-            {
-                "label": _("PFI"),  # Display name
-                "items": ["Cutting Matrix Table", "Planned Quantity Table" ]  # List DocTypes/pages in this module
-            }
-        ],
+#        # Define your module(s)
+#        "modules": [
+#            {
+#                "label": _("PFI"),  # Display name
+#                "items": ["Cutting Matrix Table", "Planned Quantity Table" ]  # List DocTypes/pages in this module
+#            }
+#        ],
         
         # Other hooks (fixtures, doctype_js, etc.)
         "doctype_js": {"BOM": "public/js/bom.js"},
         "fixtures": ["Custom Field", "Print Format"]
     }
 
-def after_migrate():
-    from frappe import reload_doctype
-    reload_doctype("Work Order")
-    frappe.publish_realtime('msgprint', 'Work Order overrides reloaded')
+#def after_migrate():
+#    from frappe import reload_doctype
+#    reload_doctype("Work Order")
+#    frappe.publish_realtime('msgprint', 'Work Order overrides reloaded')
