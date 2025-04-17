@@ -96,6 +96,14 @@ after_migrate = [
 ]
 
 
-# After other hook definitions
-after_install = "pfi.patches.work_order_custom_fields.execute"
-# hooks.py
+fixtures = [
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["name", "in", [
+                "Work Order-custom_section_break_batch_alloc",
+                "Work Order-custom_batch_allocations"
+            ]]
+        ]
+    }
+]
