@@ -1,0 +1,17 @@
+[
+    {
+        "dt": "Work Order",
+        "fieldname": "custom_section_break_batch_alloc",
+        "label": "Batch Allocations",
+        "fieldtype": "Section Break",
+        "insert_after": "for_quantity",
+        "collapsible": 1
+    },
+    {
+        "dt": "Work Order",
+        "fieldname": "custom_batch_allocations",
+        "label": "Batch Allocations",
+        "fieldtype": "HTML",
+        "insert_after": "custom_section_break_batch_alloc"
+    }
+]
