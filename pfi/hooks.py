@@ -21,6 +21,12 @@ app_license = "MIT"
 #    "assets/pfi/js/work_order.js"
 #]
 
+
+
+app_include_js = {
+    "Work Order": "public/js/work_order.js"
+}
+
 doc_events = {
 #    "Work Order": {
 #        "before_submit": "pfi.custom_scripts.work_order_custom.before_submit_work_order"

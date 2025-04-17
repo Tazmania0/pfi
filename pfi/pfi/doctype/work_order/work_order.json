@@ -1,0 +1,16 @@
+{
+    "fieldname": "batch_allocations_section",
+    "label": "Batch Allocations",
+    "fieldtype": "Section Break",
+    "collapsible": 1,
+    "insert_after": "scan_barcode"
+},
+{
+    "fieldname": "batch_allocations",
+    "label": "Batch Allocations",
+    "fieldtype": "Table",
+    "options": "Batch Allocation",
+    "insert_after": "batch_allocations_section",
+    "read_only": 1,
+    "no_copy": 1
+}

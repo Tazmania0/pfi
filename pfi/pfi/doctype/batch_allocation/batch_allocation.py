@@ -36,3 +36,21 @@ def create_allocations(work_order, batches):
         job_card.insert(ignore_permissions=True)
     
     return len(batches)
+    
+@frappe.whitelist()
+def create_allocations(work_order, batches):
+    # Clear existing links
+    frappe.db.delete("Batch Allocation", {"work_order": work_order})
+    
+    # Create new allocations
+    for batch in batches:
+        doc = frappe.get_doc({
+            "doctype": "Batch Allocation",
+            "work_order": work_order,
+            "batch_size": batch.get("batch_size")
+        }).insert(ignore_permissions=True)
+    
+    # Link to Work Order
+    work_order_doc = frappe.get_doc("Work Order", work_order)
+    work_order_doc.reload()
+    return True    
