@@ -96,5 +96,6 @@ after_migrate = [
 ]
 
 
-
+# After other hook definitions
+after_install = "pfi.patches.work_order_custom_fields.execute"
 # hooks.py
