@@ -6,11 +6,8 @@
     "insert_after": "scan_barcode"
 },
 {
-    "fieldname": "batch_allocations",
-    "label": "Batch Allocations",
-    "fieldtype": "Table",
-    "options": "Batch Allocation",
-    "insert_after": "batch_allocations_section",
-    "read_only": 1,
-    "no_copy": 1
+    "fieldname": "batch_allocations_html",
+    "label": "Allocations",
+    "fieldtype": "HTML",
+    "insert_after": "batch_allocations_section"
 }

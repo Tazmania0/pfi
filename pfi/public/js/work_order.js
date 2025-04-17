@@ -1,23 +1,21 @@
 frappe.ui.form.on('Work Order', {
     refresh: function(frm) {
-        // Show allocation button only for draft orders
+        // Button for draft orders
         if (frm.doc.docstatus === 0) {
             frm.add_custom_button(__('Allocate Batches'), () => show_batch_dialog(frm));
         }
 
-        // Refresh allocations table
-        frm.fields_dict.batch_allocations.grid.refresh();
-    },
-
-    // Automatically fetch linked allocations
-    batch_allocations: function(frm) {
+        // Load and display existing allocations
         if (!frm.doc.__islocal) {
-            frappe.db.get_list('Batch Allocation', {
-                filters: { work_order: frm.doc.name },
-                fields: ['name', 'batch_size']
-            }).then(entries => {
-                frm.doc.batch_allocations = entries;
-                frm.refresh_field('batch_allocations');
+            frappe.call({
+                method: 'pfi.pfi.doctype.batch_allocation.batch_allocation.get_allocations',
+                args: { work_order: frm.doc.name },
+                callback: (r) => {
+                    const html = `<div class="alert alert-info">
+                        ${r.message.map(a => `Batch ${a.name}: ${a.batch_size}`).join('<br>')}
+                    </div>`;
+                    frm.fields_dict.batch_allocations_html.$wrapper.html(html || 'No allocations found');
+                }
             });
         }
     }
@@ -25,23 +23,45 @@ frappe.ui.form.on('Work Order', {
 
 function show_batch_dialog(frm) {
     const dialog = new frappe.ui.Dialog({
-        // ... [keep previous dialog setup] ...
+        title: __('Batch Allocation'),
+        fields: [
+            {
+                fieldtype: 'HTML',
+                fieldname: 'info',
+                options: `<div class="alert alert-info">Total Quantity: ${frm.doc.qty}</div>`
+            },
+            {
+                fieldtype: 'Table',
+                fieldname: 'batches',
+                label: __('Batches'),
+                fields: [{
+                    fieldtype: 'Int',
+                    label: __('Batch Size'),
+                    fieldname: 'batch_size',
+                    reqd: 1,
+                    minvalue: 1
+                }]
+            }
+        ]
     });
 
     dialog.set_primary_action(__('Save & Submit'), async () => {
-        // ... [keep validation logic] ...
+        const batches = dialog.get_values().batches;
+        const total = batches.reduce((sum, row) => sum + (row.batch_size || 0), 0);
         
+        if (total !== frm.doc.qty) {
+            frappe.throw(__("Total batches must equal Work Order quantity ({0})", [frm.doc.qty]));
+            return;
+        }
+
         await frappe.call({
             method: 'pfi.pfi.doctype.batch_allocation.batch_allocation.create_allocations',
             args: {
                 work_order: frm.doc.name,
                 batches: batches
             },
-            callback: () => {
-                // Refresh allocations table after creation
-                frm.doc.batch_allocations = [];
-                frm.trigger('batch_allocations');
-            }
+            freeze: true,
+            callback: () => frm.refresh()
         });
 
         dialog.hide();
