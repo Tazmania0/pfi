@@ -98,12 +98,15 @@ after_migrate = [
 
 fixtures = [
     {
-        "dt": "Custom Field",
-        "filters": [
-            ["name", "in", [
-                "Work Order-custom_section_break_batch_alloc",
-                "Work Order-custom_batch_allocations"
-            ]]
-        ]
+        "doctype": "Custom Field",
+        "filters": {
+            "name": ["in", ["Work Order-batch_allocations"]]
+        }
+    },
+    {
+        "doctype": "DocType",
+        "filters": {
+            "name": ["in", ["Batch Allocation"]]
+        }
     }
 ]
