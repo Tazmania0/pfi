@@ -1,0 +1,11 @@
+[
+{
+  "doctype": "Custom Field",
+  "dt": "Work Order",
+  "fieldname": "batch_allocations",
+  "label": "Batch Allocations",
+  "fieldtype": "Table",
+  "insert_after": "operations",
+  "options": "Batch Allocation"
+}
+]
