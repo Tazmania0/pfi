@@ -96,11 +96,11 @@ after_migrate = [
 ]
 
 
-fixtures = [
-    {
-        "doctype": "Custom Field",
-        "filters": 
-             [["Work Order-batch_allocations"]]
-    }
-]
+#fixtures = [
+#    {
+#        "doctype": "Custom Field",
+#        "filters": 
+#             [["Work Order-batch_allocations"]]
+#    }
+#]
 
