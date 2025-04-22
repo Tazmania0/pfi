@@ -6,7 +6,7 @@
         "fieldname": "batch_allocations",
         "label": "Batch Allocations",
         "fieldtype": "Table",
-        "insert_after": "operations",
+        "insert_after": "Project",
         "options": "Batch Allocation",
         "owner": "Administrator",  
         "hidden": 1  
