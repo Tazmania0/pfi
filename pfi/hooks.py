@@ -102,11 +102,6 @@ fixtures = [
         "filters": {
             "name": ["in", ["Work Order-batch_allocations"]]
         }
-    },
-    {
-        "doctype": "DocType",
-        "filters": {
-            "name": ["in", ["Batch Allocation"]]
-        }
     }
 ]
+
