@@ -23,9 +23,9 @@ app_license = "MIT"
 
 
 
-app_include_js = {
-    "Work Order": "public/js/work_order.js"
-}
+#app_include_js = {
+#    "Work Order": "public/js/work_order.js"
+#}
 
 doc_events = {
 #    "Work Order": {
@@ -65,14 +65,14 @@ include_js = [
 #    "public/js/JsBarcode.all.min.js" 
 ]
 
-fixtures = [
+#fixtures = [
 #    {"dt": "Custom Field", "filters": [["module", "=", "PFI"]]},
 #    {"dt": "Property Setter", "filters": [["module", "=", "PFI"]]},
 #    "Custom Field",
 #    "Cutting Matrix Table",
 #    "Planned Quantity Table",
 #    "Print Format/Job Card A8"
-]
+#]
 
 
 # Include JS for Work Order and Job Card (client-side logic)
