@@ -104,3 +104,9 @@ after_migrate = [
 #    }
 #]
 
+jinja = {
+	"methods": [
+        "pfi.service.generate_barcode","pfi.service.generate_qr_code",
+        "pfi.service.generate_barcode","pfi.service.generate_barcode"
+
+        ]
