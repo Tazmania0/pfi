@@ -42,14 +42,15 @@ def generate_qr_code(item_code):
     # return """<img src="/files/barcode/{}.png" alt="barcode" style="width:100%;height:100%;">""".format(filename)
 
 @frappe.whitelist(allow_guest=True)
-def generate_barcode_svg(item_code, barcode_type="Code128", width=0.4, height=None, scale=None):
-    if barcode_type != "Code128":
-        raise Exception("Barcode type not supported")
+def generate_barcode_svg(item_code):
+    from barcode import Code128
+    from barcode.writer import SVGWriter
+    from io import BytesIO
 
     options = {
-        'module_width': width,
+        'module_width': 0.4,
         'quiet_zone': 10,
-        'write_text': False  # Optional: Hide human-readable text under barcode
+        'write_text': False
     }
 
     buffer = BytesIO()
@@ -57,5 +58,8 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.4, height=No
     svg_data = buffer.getvalue().decode("utf-8")
     buffer.close()
 
-    # Return raw <svg>...</svg> XML
+    # Strip <?xml version="1.0" ... ?> header if present
+    if svg_data.startswith("<?xml"):
+        svg_data = svg_data.split("?>", 1)[1].strip()
+
     return svg_data
