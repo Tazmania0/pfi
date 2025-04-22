@@ -99,9 +99,8 @@ after_migrate = [
 fixtures = [
     {
         "doctype": "Custom Field",
-        "filters": {
-            "name": ["in", ["Work Order-batch_allocations"]]
-        }
+        "filters": 
+             [["Work Order-batch_allocations"]]
     }
 ]
 
