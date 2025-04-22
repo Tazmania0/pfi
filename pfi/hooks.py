@@ -110,3 +110,4 @@ jinja = {
         "pfi.service.generate_barcode","pfi.service.generate_barcode"
 
         ]
+        }
