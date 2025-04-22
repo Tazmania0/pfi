@@ -5,6 +5,7 @@
   "doc_type": "Job Card",
   "module": "Pfi",
   "is_standard": "No",
+  "standard": "No",
   "custom_format": 1,
   "print_format_type": "Jinja",
   "disabled": 0,
