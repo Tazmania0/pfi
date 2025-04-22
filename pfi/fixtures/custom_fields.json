@@ -6,9 +6,9 @@
         "fieldname": "batch_allocations",
         "label": "Batch Allocations",
         "fieldtype": "Table",
-        "insert_after": "Project",
+        "insert_after": "project",
         "options": "Batch Allocation",
         "owner": "Administrator",  
-        "hidden": 1  
+        "hidden": 0  
     }
 ]
