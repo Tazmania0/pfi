@@ -2,7 +2,7 @@
 {
   "doctype": "Report",
   "report_name": "Executions - f",
-  "name:" "Executions - f-PFI"
+  "name:" "Executions - f-PFI",
   "ref_doctype": "Job Card",
   "report_type": "Query Report",
   "is_standard": "No",
