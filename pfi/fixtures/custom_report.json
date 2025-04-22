@@ -8,7 +8,53 @@
   "is_standard": "No",
   "module": "Pfi",
   "add_total_row": 1,
-  "query": "SELECT `tabJob Card`.work_order AS \"Work Order\", \n`tabJob Card`.name AS \"Job Card\", \n`tabJob Card`.item_name AS \"Model-Size:Data:120\", \n `tabJob Card Time Log`.employee AS \"Employee\", \n`tabJob Card Time Log`.from_time AS \"From Time:Date:120\",\n`tabJob Card Time Log`.to_time AS \"To Time\", \n`tabJob Card`.time_required/`tabJob Card`.for_quantity AS \"Unit Time:Float:50\",\n `tabJob Card Time Log`.time_in_mins AS \"Exec Time, min:Float:50\",\n`tabJob Card`.time_required/`tabJob Card`.for_quantity * `tabJob Card Time Log`.completed_qty  AS \"Est. Time, min:Float:50\", \n`tabJob Card`.for_quantity AS \"QTY:int:90\",\n`tabJob Card Time Log`.completed_qty AS \"Completed Qty:int:90\",\n `tabJob Card`.operation AS \"Operation\" \nFROM `tabJob Card Time Log` INNER JOIN `tabJob Card` ON `tabJob Card`.name = `tabJob Card Time Log`.parent \n WHERE (`tabJob Card`.docstatus= (1 or 0) AND `tabJob Card Time Log`.docstatus= (1 or 0) ) \n AND  (`tabJob Card Time Log`.time_in_mins > 0 AND `tabJob Card Time Log`.to_time BETWEEN %(from)s AND  DATE_ADD(%(until)s, INTERVAL 1 DAY)  )\nORDER BY `tabJob Card Time Log`.employee, `tabJob Card Time Log`.to_time; ",
+  "query": "SELECT `tabJob Card`.work_order AS \"Work Order\", \n`tabJob Card`.name AS \"Job Card\", \n`tabJob Card`.item_name AS \"Model-Size:Data:120\", \n`tabJob Card Time Log`.employee AS \"Employee\", \n`tabJob Card Time Log`.from_time AS \"From Time:Date:120\",\n`tabJob Card Time Log`.to_time AS \"To Time\", \n`tabJob Card`.time_required/`tabJob Card`.for_quantity AS \"Unit Time:Float:50\",\n`tabJob Card Time Log`.time_in_mins AS \"Exec Time, min:Float:50\",\n`tabJob Card`.time_required/`tabJob Card`.for_quantity * `tabJob Card Time Log`.completed_qty  AS \"Est. Time, min:Float:50\", \n`tabJob Card`.for_quantity AS \"QTY:int:90\",\n`tabJob Card Time Log`.completed_qty AS \"Completed Qty:int:90\",\n`tabJob Card`.operation AS \"Operation\" \nFROM `tabJob Card Time Log` INNER JOIN `tabJob Card` ON `tabJob Card`.name = `tabJob Card Time Log`.parent \nWHERE (`tabJob Card`.docstatus= (1 or 0) AND `tabJob Card Time Log`.docstatus= (1 or 0) ) \nAND  (`tabJob Card Time Log`.time_in_mins > 0 AND `tabJob Card Time Log`.to_time BETWEEN %(from)s AND  DATE_ADD(%(until)s, INTERVAL 1 DAY)  )\nORDER BY `tabJob Card Time Log`.employee, `tabJob Card Time Log`.to_time; ",
+  "filters": [
+    {
+      "fieldname": "from",
+      "label": "From Date",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "until",
+      "label": "To Date",
+      "fieldtype": "Date"
+    }
+  ]
+},
+{
+  "doctype": "Report",
+  "report_name": "Executions - f1-PFI",
+  "name": "Executions - f1-PFI",
+  "ref_doctype": "Job Card",
+  "report_type": "Query Report",
+  "is_standard": "No",
+  "module": "Pfi",
+  "add_total_row": 1,
+  "query": "SELECT\n    jc.work_order AS \"Work Order\",\n    jc.name AS \"Job Card\", \n    jc.item_name AS \"Model-Size:Data:120\",\n    jctl.employee AS \"Employee\",\n    jctl.from_time AS \"From Time:Date:120\",\n    jctl.to_time AS \"To Time\",\n    ROUND(\n        COALESCE(\n            bom_op.time_in_mins / NULLIF(bom_op.batch_size, 0),\n            jc.time_required / NULLIF(jc.for_quantity, 0)\n        ), \n        2\n    ) AS \"Unit Time:Float:50\",\n    jctl.time_in_mins AS \"Exec Time, min:Float:50\",\n    ROUND(\n        COALESCE(\n            (bom_op.time_in_mins / NULLIF(bom_op.batch_size, 0)) * jctl.completed_qty,\n            (jc.time_required / NULLIF(jc.for_quantity, 0)) * jctl.completed_qty\n        ),\n        2\n    ) AS \"Est. Time, min:Float:50\",\n    jc.for_quantity AS \"QTY:int:90\",\n    jctl.completed_qty AS \"Completed Qty:int:90\",\n    jc.operation AS \"Operation\"\nFROM `tabJob Card Time Log` jctl\nINNER JOIN `tabJob Card` jc \n    ON jc.name = jctl.parent\n    AND jc.docstatus IN (0, 1)\nLEFT JOIN `tabWork Order` wo \n    ON wo.name = jc.work_order\nLEFT JOIN `tabBOM` bom \n    ON bom.name = wo.bom_no\nLEFT JOIN `tabBOM Operation` bom_op \n    ON bom_op.parent = bom.name \n    AND bom_op.operation = jc.operation\nWHERE\n    jctl.docstatus IN (0, 1)\n    AND jctl.time_in_mins > 0\n    AND jctl.to_time BETWEEN %(from)s AND DATE_ADD(%(until)s, INTERVAL 1 DAY)\nORDER BY \n    jctl.employee, \n    jctl.to_time;", 
+  "filters": [
+    {
+      "fieldname": "from",
+      "label": "From Date",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "until",
+      "label": "To Date",
+      "fieldtype": "Date"
+    }
+  ]
+},
+{
+  "doctype": "Report",
+  "report_name": "Executions - f2-PFI",
+  "name": "Executions - f2-PFI",
+  "ref_doctype": "Job Card",
+  "report_type": "Query Report",
+  "is_standard": "No",
+  "module": "Pfi",
+  "add_total_row": 1,
+  "query": "SELECT\n    jc.work_order AS \"Work Order\",\n    jc.name AS \"Job Card\", \n    jc.item_name AS \"Model-Size:Data:120\",\n    COALESCE(\n        (SELECT abbr FROM `tabItem Attribute Value` \n         WHERE parent = iv_colour.attribute \n         AND attribute_value = iv_colour.attribute_value),\n        iv_colour.attribute_value\n    ) AS \"Colour:Data:80\",\n    COALESCE(\n        (SELECT abbr FROM `tabItem Attribute Value` \n         WHERE parent = iv_size.attribute \n         AND attribute_value = iv_size.attribute_value),\n        iv_size.attribute_value\n    ) AS \"Size:Data:50\",\n    jctl.employee AS \"Employee\",\n    jctl.from_time AS \"From Time:Date:120\",\n    jctl.to_time AS \"To Time\",\n    ROUND(\n        COALESCE(\n            bom_op.time_in_mins / NULLIF(bom_op.batch_size, 0),\n            jc.time_required / NULLIF(jc.for_quantity, 0)\n        ), \n        2\n    ) AS \"Unit Time:Float:50\",\n    jctl.time_in_mins AS \"Exec Time, min:Float:50\",\n    ROUND(\n        COALESCE(\n            (bom_op.time_in_mins / NULLIF(bom_op.batch_size, 0)) * jctl.completed_qty,\n            (jc.time_required / NULLIF(jc.for_quantity, 0)) * jctl.completed_qty\n        ),\n        2\n    ) AS \"Est. Time, min:Float:50\",\n    jc.for_quantity AS \"QTY:int:90\",\n    jctl.completed_qty AS \"Completed Qty:int:90\",\n    jc.operation AS \"Operation\"\nFROM `tabJob Card Time Log` jctl\nINNER JOIN `tabJob Card` jc \n    ON jc.name = jctl.parent\n    AND jc.docstatus IN (0, 1)\nLEFT JOIN `tabWork Order` wo \n    ON wo.name = jc.work_order\nLEFT JOIN `tabItem Variant Attribute` iv_colour\n    ON iv_colour.parent = wo.production_item\n    AND iv_colour.attribute = 'Colour'\nLEFT JOIN `tabItem Variant Attribute` iv_size\n    ON iv_size.parent = wo.production_item\n    AND iv_size.attribute = 'Size'\nLEFT JOIN `tabBOM` bom \n    ON bom.name = wo.bom_no\nLEFT JOIN `tabBOM Operation` bom_op \n    ON bom_op.parent = bom.name \n    AND bom_op.operation = jc.operation\nWHERE\n    jctl.docstatus IN (0, 1)\n    AND jctl.time_in_mins > 0\n    AND jctl.to_time BETWEEN %(from)s AND DATE_ADD(%(until)s, INTERVAL 1 DAY)\nORDER BY \n    jctl.employee, \n    jctl.to_time;", 
   "filters": [
     {
       "fieldname": "from",
