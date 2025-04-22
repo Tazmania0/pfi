@@ -40,3 +40,22 @@ def generate_qr_code(item_code):
     img.save("{}/public/files/barcode/{}.png".format(frappe.local.site,filename))
     return "/files/barcode/{}.png".format(filename)
     # return """<img src="/files/barcode/{}.png" alt="barcode" style="width:100%;height:100%;">""".format(filename)
+
+@frappe.whitelist(allow_guest=True)
+def generate_barcode_svg(item_code, barcode_type="Code128", width=0.4, height=None, scale=None):
+    if barcode_type != "Code128":
+        raise Exception("Barcode type not supported")
+
+    options = {
+        'module_width': width,
+        'quiet_zone': 10,
+        'write_text': False  # Optional: Hide human-readable text under barcode
+    }
+
+    buffer = BytesIO()
+    Code128(str(item_code), writer=SVGWriter()).write(buffer, options)
+    svg_data = buffer.getvalue().decode("utf-8")
+    buffer.close()
+
+    # Return raw <svg>...</svg> XML
+    return svg_data
