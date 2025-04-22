@@ -1,0 +1,13 @@
+[
+{
+  "doctype": "Print Format",
+  "name": "Custom Job Card - pfi",
+  "doc_type": "Job Card",
+  "module": "Pfi",
+  "is_standard": "No",
+  "custom_format": 1,
+  "print_format_type": "Jinja",
+  "disabled": 0,
+  "html": "<div style=\"padding: 16px; font-family: sans-serif; font-size: 12px;\">\n  <h2 style=\"margin-bottom: 4px;\">Job Card: {{ doc.name }}</h2>\n  <p><strong>Work Order:</strong> {{ doc.work_order }}</p>\n  <p><strong>Item to Manufacture:</strong> {{ doc.item_to_manufacture }}</p>\n  <p><strong>Operation:</strong> {{ doc.operation }}</p>\n  <p><strong>Custom Qty to Manufacture:</strong> {{ doc.custom_qty_to_manufacture }}</p>\n  <p><strong>Status:</strong> {{ doc.status }}</p>\n\n  <div style=\"margin-top: 12px;\">\n    {{ frappe.utils.get_barcode_svg(doc.name, \"Code128\", width=240, height=40) }}\n  </div>\n</div>"
+}
+]
