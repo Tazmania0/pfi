@@ -1,11 +1,14 @@
 [
-{
-  "doctype": "Custom Field",
-  "dt": "Work Order",
-  "fieldname": "batch_allocations",
-  "label": "Batch Allocations",
-  "fieldtype": "Table",
-  "insert_after": "operations",
-  "options": "Batch Allocation"
-}
+    {
+        "doctype": "Custom Field",
+        "name": "Work Order-batch_allocations",  // Required unique identifier
+        "dt": "Work Order",
+        "fieldname": "batch_allocations",
+        "label": "Batch Allocations",
+        "fieldtype": "Table",
+        "insert_after": "operations",
+        "options": "Batch Allocation",
+        "owner": "Administrator",  // Required field
+        "hidden": 1  // Optional but recommended for link fields
+    }
 ]
