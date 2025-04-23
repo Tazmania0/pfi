@@ -42,15 +42,14 @@ def generate_qr_code(item_code):
     # return """<img src="/files/barcode/{}.png" alt="barcode" style="width:100%;height:100%;">""".format(filename)
 
 @frappe.whitelist()
-def generate_barcode_svg(item_code):
-    from barcode import Code128
-    from barcode.writer import SVGWriter
-    from io import BytesIO
+def generate_barcode_svg(item_code, barcode_type="Code128", width=0.4, height=None, scale=None):
+    if barcode_type != "Code128":
+        raise Exception("Barcode type not supported")
 
     options = {
-        'module_width': 0.6,
-        'quiet_zone': 6,
-        'write_text': False  # ← Disable default text to avoid overlap
+        'module_width': width,
+        'quiet_zone': 10,
+        'write_text': True,  # You can change this to False if adding custom text later
     }
 
     buffer = BytesIO()
@@ -58,13 +57,8 @@ def generate_barcode_svg(item_code):
     svg_data = buffer.getvalue().decode("utf-8")
     buffer.close()
 
-    # Remove XML header
+    # Optional: Strip XML header to embed cleanly inside HTML
     if svg_data.startswith("<?xml"):
         svg_data = svg_data.split("?>", 1)[1].strip()
-
-    # Inject custom text label
-    # Add this after the closing </g> tag (which ends the barcode bars)
-    custom_text = f'<text x="50%" y="100%" text-anchor="middle" font-size="12">{item_code}</text>'
-    svg_data = svg_data.replace("</svg>", f"{custom_text}</svg>")
 
     return svg_data
