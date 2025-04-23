@@ -42,39 +42,55 @@ def generate_qr_code(item_code):
     # return """<img src="/files/barcode/{}.png" alt="barcode" style="width:100%;height:100%;">""".format(filename)
 
 @frappe.whitelist()
+
+
 def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, scale=1.0):
+    import re
     from io import BytesIO
-    import hashlib
     from barcode import Code128
     from barcode.writer import SVGWriter
-
+    
     if barcode_type != "Code128":
         raise Exception("Only Code128 is currently supported")
 
-    # Barcode rendering options
     options = {
         "module_width": width,
         "quiet_zone": 1,
         "write_text": True,
         "text_distance": 2,
-        "module_height": 10,
-        "font_size": 8
+        "module_height": 5,
+        "font_size": 7
     }
-    
-    if scale > 1.0:
-        scale = 1.0 
-    
+
     buffer = BytesIO()
     Code128(str(item_code), writer=SVGWriter()).write(buffer, options)
     svg_data = buffer.getvalue().decode("utf-8")
     buffer.close()
 
-    # Remove XML header if present
+    # Remove XML header
     if svg_data.startswith("<?xml"):
         svg_data = svg_data.split("?>", 1)[1].strip()
 
-    # Inject scale transform into the <g> element
-    if scale and scale != 1.0:
-        svg_data = svg_data.replace("<g", f'<g transform="scale({scale})"', 1)
+    # Extract original width and height from <svg ...>
+    match = re.search(r'<svg[^>]*width="([\d.]+)(mm|px)?"[^>]*height="([\d.]+)(mm|px)?"', svg_data)
+    if not match:
+        raise Exception("Could not find SVG width/height")
+
+    original_width = float(match.group(1))
+    original_height = float(match.group(3))
+
+    scaled_width = original_width * scale
+    scaled_height = original_height * scale
+
+    # Inject new width/height + viewBox
+    svg_data = re.sub(
+        r'<svg[^>]*>',
+        f'<svg width="{scaled_width}mm" height="{scaled_height}mm" viewBox="0 0 {original_width} {original_height}">',
+        svg_data,
+        count=1
+    )
+
+    # Optional: scale internal <g> for clarity (or skip if viewBox is enough)
+    # svg_data = svg_data.replace("<g", f'<g transform="scale({scale})"', 1)
 
     return svg_data
