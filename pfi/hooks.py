@@ -122,4 +122,8 @@ jinja = {
         
 # Hook into boot sequence
 app_include_py = ["pfi.scripts.override"]  # or a new file like `override.py`
+
+override_doctype_class = {
+    "Work Order": "pfi.scripts.job_cards.WorkOrder"
+}
         
