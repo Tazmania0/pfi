@@ -75,7 +75,7 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=No
         svg_open_tag += f'{width_attr}{height_attr}'
         svg_data = svg_data.replace("<svg", svg_open_tag, 1)
 
-    # Inject text at bottom center (adjust y as needed)
+#    # Inject text at bottom center (adjust y as needed)
 #    text_element = f'''
 #        <text x="50%" y="95%" text-anchor="middle"
 #              font-size="12" fill="black">{item_code}</text>
