@@ -83,3 +83,5 @@ def validate_job_card(doc, method):
 # - Label: Batch Allocations
 # - Fieldname: batch_allocations
 # - Options: Batch Allocation
+
+
