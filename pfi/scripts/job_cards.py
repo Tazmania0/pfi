@@ -29,16 +29,18 @@ class CustomJobCard:
         if doc.for_quantity <= 0 or doc.for_quantity != int(doc.for_quantity):
             frappe.throw("Job Card Quantity (for_quantity) must be a positive integer.")
 
-def validate_batch_allocations(work_order):
+def validate_batch_allocations(work_order, method=None):
     """Ensure batch allocations do not exceed Work Order qty + Overproduction%"""
     total_batch_qty = sum(row.batch_qty for row in work_order.batch_allocations)
-    allowed_qty = work_order.qty * (1 + (work_order.overproduction_percentage or 0) / 100)
+    overproduction = getattr(work_order, "overproduction_percentage", 0) or 0
+    allowed_qty = work_order.qty * (1 + overproduction / 100)
 
     if total_batch_qty > allowed_qty:
         frappe.throw(
             f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction ({allowed_qty})."
         )
-
+        
+        
 @frappe.whitelist()
 def create_job_cards_from_splits(work_order_name):
     work_order = frappe.get_doc("Work Order", work_order_name)
