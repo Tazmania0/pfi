@@ -98,7 +98,8 @@ class WorkOrder(ERPNextWorkOrder):
         plan_days = cint(manufacturing_settings_doc.capacity_planning_for_days) or 30
 
         # Fetch batch allocations related to this work order
-        batch_allocations = frappe.get_all("Batch Allocation", filters={"work_order": self.name})
+        batch_allocations = frappe.get_all("Batch Allocation", filters={"work_order": self.name}, fields=["name", "batch_qty"])
+
         
         # Custom batch logic: check if batch allocations exist
         if batch_allocations:
