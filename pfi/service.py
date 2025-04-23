@@ -55,7 +55,7 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=No
     options = {
         "module_width": width,
         "quiet_zone": 6,
-        "write_text": False,  # We'll inject custom text manually
+        "write_text": True,  # We'll inject custom text manually
     }
 
     buffer = BytesIO()
@@ -76,10 +76,10 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=No
         svg_data = svg_data.replace("<svg", svg_open_tag, 1)
 
     # Inject text at bottom center (adjust y as needed)
-    text_element = f'''
-        <text x="50%" y="95%" text-anchor="middle"
-              font-size="12" fill="black">{item_code}</text>
-    '''
-    svg_data = svg_data.replace("</svg>", f"{text_element}</svg>")
+#    text_element = f'''
+#        <text x="50%" y="95%" text-anchor="middle"
+#              font-size="12" fill="black">{item_code}</text>
+#    '''
+#    svg_data = svg_data.replace("</svg>", f"{text_element}</svg>")
 
     return svg_data
