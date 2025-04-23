@@ -116,17 +116,20 @@ class WorkOrder(ERPNextWorkOrder):
             self.db_set("planned_end_date", planned_end_date)
 
     def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
-        # Iterate through batch allocations linked to the work order
         for batch in self.batch_allocations:
+            if batch.status != "Pending":
+                continue
+
             for index, row in enumerate(self.operations):
-                if batch.batch_qty > 0:  # Proceed if batch quantity is greater than zero
-                    # Mimic ERPNext job card creation logic
+                if batch.batch_qty > 0:
                     temp_qty = batch.batch_qty
                     while temp_qty > 0:
                         temp_qty = split_qty_based_on_batch_size(self, row, temp_qty)
                         if row.job_card_qty > 0:
-                            row.job_card_qty = batch.batch_qty  # Override with custom batch quantity
+                            row.job_card_qty = batch.batch_qty
                             self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
+
+            batch.status = "Created"
 
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
