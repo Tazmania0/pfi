@@ -64,6 +64,6 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.3, height=No
     if svg_data.startswith("<?xml"):
         svg_data = svg_data.split("?>", 1)[1].strip()
         
-    svg_data = svg_data.replace("<svg", '<svg width="60%" height="60%"')
+    svg_data = svg_data.replace("<svg", '<svg width="100%" height="40%"')
     
     return svg_data
