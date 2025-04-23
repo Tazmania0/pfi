@@ -42,7 +42,7 @@ def generate_qr_code(item_code):
     # return """<img src="/files/barcode/{}.png" alt="barcode" style="width:100%;height:100%;">""".format(filename)
 
 @frappe.whitelist()
-def generate_barcode_svg(item_code, barcode_type="Code128", width=0.4, height=None, scale=None):
+def generate_barcode_svg(item_code, barcode_type="Code128", width=0.3, height=None, scale=None):
     from barcode import Code128
     from barcode.writer import SVGWriter
     
