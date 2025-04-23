@@ -97,14 +97,10 @@ class WorkOrder(ERPNextWorkOrder):
         enable_capacity_planning = not cint(manufacturing_settings_doc.disable_capacity_planning)
         plan_days = cint(manufacturing_settings_doc.capacity_planning_for_days) or 30
 
-        # Fetch batch allocations related to this work order
-        batch_allocations = frappe.get_all("Batch Allocation", filters={"work_order": self.name}, fields=["name", "batch_qty"])
-
-        
         # Custom batch logic: check if batch allocations exist
-        if batch_allocations:
+        if self.batch_allocations:  # 'batch_allocations' is the table field in Work Order
             frappe.msgprint("Creating Job Cards from Custom Batch allocations...")
-            self.create_job_cards_from_batch_allocations(batch_allocations, plan_days, enable_capacity_planning)
+            self.create_job_cards_from_batch_allocations(plan_days, enable_capacity_planning)
         else:
             # Default ERPNext logic
             for index, row in enumerate(self.operations):
@@ -118,22 +114,19 @@ class WorkOrder(ERPNextWorkOrder):
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
 
-    def create_job_cards_from_batch_allocations(self, batch_allocations, plan_days, enable_capacity_planning):
-        for batch in batch_allocations:
-            # Fetch batch details
-            batch_doc = frappe.get_doc("Batch Allocation", batch["name"])
-            
+    def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
+        for batch in self.batch_allocations:  # Access the linked batch allocations
             for index, row in enumerate(self.operations):
-                if batch_doc.batch_qty > 0:
+                if batch.batch_qty > 0:  # batch_qty is the quantity in the batch allocation
                     if not row.workstation:
                         frappe.throw(_("Workstation is required for Operation: {0}").format(row.operation))
 
                     # Mimic ERPNext job card preparation logic
-                    temp_qty = batch_doc.batch_qty
+                    temp_qty = batch.batch_qty
                     while temp_qty > 0:
                         temp_qty = split_qty_based_on_batch_size(self, row, temp_qty)
                         if row.job_card_qty > 0:
-                            row.job_card_qty = batch_doc.batch_qty  # force override with custom size
+                            row.job_card_qty = batch.batch_qty  # force override with custom size
                             self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
 
         planned_end_date = self.operations and self.operations[-1].planned_end_time
