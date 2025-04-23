@@ -57,10 +57,13 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, scale=1.0
         "quiet_zone": 1,
         "write_text": True,
         "text_distance": 2,
-        "module_height": 5,
-        "font_size": 7
+        "module_height": 10,
+        "font_size": 8
     }
-
+    
+    if scale > 1.0:
+        scale = 1.0 
+    
     buffer = BytesIO()
     Code128(str(item_code), writer=SVGWriter()).write(buffer, options)
     svg_data = buffer.getvalue().decode("utf-8")
