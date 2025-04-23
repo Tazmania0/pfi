@@ -26,10 +26,10 @@ class CustomJobCard(Document):
         if self.for_quantity <= 0 or self.for_quantity != int(self.for_quantity):
             frappe.throw("Job Card Quantity (for_quantity) must be a positive integer.")
 
-def validate_batch_allocations(work_order):
+def validate_batch_allocations(doc, method):
     """Ensure batch allocations do not exceed Work Order qty + Overproduction%"""
-    total_batch_qty = sum(row.batch_qty for row in work_order.batch_allocations)
-    allowed_qty = work_order.qty * (1 + (work_order.overproduction_percentage or 0) / 100)
+    total_batch_qty = sum(row.batch_qty for row in doc.batch_allocations)
+    allowed_qty = doc.qty * (1 + (doc.overproduction_percentage or 0) / 100)
 
     if total_batch_qty > allowed_qty:
         frappe.throw(
