@@ -58,7 +58,7 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, module_he
         "write_text": True,
         "text_distance": 3,
         "module_height": module_height,
-        "font_size": 8
+        "font_size": 9
     }
     
     if scale > 1.0:
