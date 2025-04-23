@@ -43,19 +43,19 @@ def generate_qr_code(item_code):
 
 @frappe.whitelist()
 def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=None, scale=None):
+    from io import BytesIO
+    import hashlib
     from barcode import Code128
     from barcode.writer import SVGWriter
-    
-    if barcode_type != "Code128":
-        raise Exception("Barcode type not supported")
 
+    if barcode_type != "Code128":
+        raise Exception("Only Code128 is currently supported")
+
+    # Barcode rendering options
     options = {
-        'module_width': width,
-        'quiet_zone': 3,
-        'write_text': False,  # You can change this to False if adding custom text later
-        'text_distance':1,
-        'module_height': 5,
-        'font_size':10,
+        "module_width": width,
+        "quiet_zone": 6,
+        "write_text": False,  # We'll inject custom text manually
     }
 
     buffer = BytesIO()
@@ -63,10 +63,23 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=No
     svg_data = buffer.getvalue().decode("utf-8")
     buffer.close()
 
-    # Optional: Strip XML header to embed cleanly inside HTML
+    # Remove XML header if present
     if svg_data.startswith("<?xml"):
         svg_data = svg_data.split("?>", 1)[1].strip()
-        
-    svg_data = svg_data.replace("<svg", '<svg width="100%" height="40%"')
-    
+
+    # Dynamically inject width and height
+    svg_open_tag = '<svg'
+    if height or scale:
+        width_attr = f' width="{scale}"' if scale else ''
+        height_attr = f' height="{height}"' if height else ''
+        svg_open_tag += f'{width_attr}{height_attr}'
+        svg_data = svg_data.replace("<svg", svg_open_tag, 1)
+
+    # Inject text at bottom center (adjust y as needed)
+    text_element = f'''
+        <text x="50%" y="95%" text-anchor="middle"
+              font-size="12" fill="black">{item_code}</text>
+    '''
+    svg_data = svg_data.replace("</svg>", f"{text_element}</svg>")
+
     return svg_data
