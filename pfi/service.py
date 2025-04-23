@@ -54,8 +54,9 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=No
     # Barcode rendering options
     options = {
         "module_width": width,
-        "quiet_zone": 6,
+        "quiet_zone": 1,
         "write_text": True,  # We'll inject custom text manually
+        "text_distance": 2,
     }
 
     buffer = BytesIO()
