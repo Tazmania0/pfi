@@ -22,6 +22,12 @@ app_license = "MIT"
 #]
 
 
+# Ensure monkey-patching runs during app boot
+import pfi.scripts.override  # This must be outside any function or dict
+
+
+
+
 
 #app_include_js = {
 #    "Work Order": "public/js/work_order.js"
