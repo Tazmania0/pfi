@@ -42,7 +42,7 @@ def generate_qr_code(item_code):
     # return """<img src="/files/barcode/{}.png" alt="barcode" style="width:100%;height:100%;">""".format(filename)
 
 @frappe.whitelist()
-def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=None, scale=None):
+def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, scale=1.0):
     from io import BytesIO
     import hashlib
     from barcode import Code128
@@ -55,10 +55,10 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=No
     options = {
         "module_width": width,
         "quiet_zone": 1,
-        "write_text": True,  # We'll inject custom text manually
+        "write_text": True,
         "text_distance": 2,
-        "module_height":5,
-        "font_size":7
+        "module_height": 5,
+        "font_size": 7
     }
 
     buffer = BytesIO()
@@ -70,19 +70,8 @@ def generate_barcode_svg(item_code, barcode_type="Code128", width=0.2, height=No
     if svg_data.startswith("<?xml"):
         svg_data = svg_data.split("?>", 1)[1].strip()
 
-    # Dynamically inject width and height
-    svg_open_tag = '<svg'
-    if height or scale:
-        width_attr = f' width="{scale}"' if scale else ''
-        height_attr = f' height="{height}"' if height else ''
-        svg_open_tag += f'{width_attr}{height_attr}'
-        svg_data = svg_data.replace("<svg", svg_open_tag, 1)
-
-#    # Inject text at bottom center (adjust y as needed)
-#    text_element = f'''
-#        <text x="50%" y="95%" text-anchor="middle"
-#              font-size="12" fill="black">{item_code}</text>
-#    '''
-#    svg_data = svg_data.replace("</svg>", f"{text_element}</svg>")
+    # Inject scale transform into the <g> element
+    if scale and scale != 1.0:
+        svg_data = svg_data.replace("<g", f'<g transform="scale({scale})"', 1)
 
     return svg_data
