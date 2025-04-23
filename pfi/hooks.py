@@ -45,7 +45,7 @@ doc_events = {
 # In hooks.py:
 doc_events = {
     "Job Card": {
-        "validate": "pfi.scripts.job_cards.CustomJobCard.validate"
+        "validate": "pfi.scripts.job_cards.validate_job_card"
     },
     "Work Order": {
         "validate": "pfi.scripts.job_cards.validate_batch_allocations"
