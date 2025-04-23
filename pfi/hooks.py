@@ -48,7 +48,8 @@ doc_events = {
         "validate": "pfi.scripts.job_cards.validate_job_card"
     },
     "Work Order": {
-        "validate": "pfi.scripts.job_cards.validate_batch_allocations"
+        "validate": "pfi.scripts.job_cards.validate_batch_allocations",
+#        "on_submit": "pfi.scripts.job_cards.on_submit_work_order"
     }
 }
 
@@ -111,3 +112,8 @@ jinja = {
         "pfi.service.generate_barcode_svg","pfi.service.generate_barcode_svg"
         ]
         }
+        
+        
+# Hook into boot sequence
+app_include_py = ["pfi.scripts.override"]  # or a new file like `override.py`
+        

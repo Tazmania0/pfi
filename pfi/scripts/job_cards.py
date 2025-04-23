@@ -59,6 +59,7 @@ def create_job_cards_from_splits(work_order_name):
     work_order.save()
     return "Job Cards Created"
 
+
 # Validate wrapper to be called from hooks
 
 def validate_job_card(doc, method):
