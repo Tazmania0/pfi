@@ -46,6 +46,7 @@ def validate_batch_allocations(work_order, method=None):
 @frappe.whitelist()
 def create_job_cards_from_splits(work_order_name):
     work_order = frappe.get_doc("Work Order", work_order_name)
+    frappe.msgprint("Callig Validate batch allocations..")
     validate_batch_allocations(work_order)
     for row in work_order.batch_allocations:
         if row.status != "Pending":
