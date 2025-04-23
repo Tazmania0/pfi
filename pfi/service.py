@@ -43,6 +43,9 @@ def generate_qr_code(item_code):
 
 @frappe.whitelist()
 def generate_barcode_svg(item_code, barcode_type="Code128", width=0.4, height=None, scale=None):
+    from barcode import Code128
+    from barcode.writer import SVGWriter
+    
     if barcode_type != "Code128":
         raise Exception("Barcode type not supported")
 
