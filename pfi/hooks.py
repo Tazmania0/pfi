@@ -23,7 +23,7 @@ app_license = "MIT"
 
 
 # Ensure monkey-patching runs during app boot
-import pfi.scripts.override  # This must be outside any function or dict
+#import pfi.scripts.override  # This must be outside any function or dict
 
 
 
