@@ -41,18 +41,18 @@ doc_events = {
 #    } 
 }
 
+
+# In hooks.py:
 doc_events = {
-#    "Work Order": {
-#        "before_save": "pfi.custom_scripts.work_order_customization.before_save",
-#        "on_submit": "pfi.custom_scripts.work_order_customization.on_submit"
-#    }
+    "Job Card": {
+        "validate": "pfi.scripts.job_cards.CustomJobCard.validate"
+    },
+    "Work Order": {
+        "validate": "pfi.scripts.job_cards.validate_batch_allocations"
+    }
 }
 
-doc_events = {
-#    "BOM": {
-#        "before_validate": "pfi.custom_scripts.bom_events.validate_bom"
-#    }
-}
+
 
 # hooks.py
 override_doctype_class = {
