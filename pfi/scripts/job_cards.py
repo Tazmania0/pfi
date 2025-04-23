@@ -17,7 +17,8 @@ class CustomJobCard:
             frappe.db.get_value("Job Card", jc, "for_quantity") or 0
             for jc in frappe.get_all("Job Card", filters={"work_order": doc.work_order, "name": ("!=", doc.name)}, pluck="name")
         )
-        allowed_qty = wo.qty * (1 + (wo.overproduction_percentage or 0) / 100)
+        overproduction_percentage = frappe.db.get_single_value("Manufacturing Settings", "overproduction_percentage_for_work_order") or 0
+        allowed_qty = wo.qty * (1 + overproduction_percentage / 100)
 
         if existing_qty + (doc.for_quantity or 0) > allowed_qty:
             frappe.throw(f"Total Job Card quantity ({existing_qty + (doc.for_quantity or 0)}) exceeds allowed Work Order quantity including overproduction ({allowed_qty}).")
@@ -32,13 +33,14 @@ class CustomJobCard:
 def validate_batch_allocations(work_order, method=None):
     """Ensure batch allocations do not exceed Work Order qty + Overproduction%"""
     total_batch_qty = sum(row.batch_qty for row in work_order.batch_allocations)
-    overproduction = getattr(work_order, "overproduction_percentage", 0) or 0
-    allowed_qty = work_order.qty * (1 + overproduction / 100)
+    overproduction_percentage = frappe.db.get_single_value("Manufacturing Settings", "overproduction_percentage_for_work_order") or 0
+    allowed_qty = work_order.qty * (1 + overproduction_percentage / 100)
 
     if total_batch_qty > allowed_qty:
         frappe.throw(
             f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction ({allowed_qty})."
         )
+
         
         
 @frappe.whitelist()
@@ -57,12 +59,13 @@ def create_job_cards_from_splits(work_order_name):
     work_order.save()
     return "Job Cards Created"
 
-
 # Validate wrapper to be called from hooks
 
 def validate_job_card(doc, method):
     CustomJobCard.validate(doc)
-
+    
+    
+    
 # In Job Card Doctype:
 # Use existing field:
 # Fieldname: for_quantity
