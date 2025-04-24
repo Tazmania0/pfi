@@ -120,18 +120,21 @@ class WorkOrder(ERPNextWorkOrder):
             if batch.status != "Pending":
                 continue
 
-            for index, row in enumerate(self.operations):
-                if batch.batch_qty > 0:
-                    temp_qty = batch.batch_qty
-                    while temp_qty > 0:
-                        remaining_qty = split_qty_based_on_batch_size(self, row, temp_qty)
-                        if row.job_card_qty > 0:
-                            row.job_card_qty = temp_qty - remaining_qty
-                            self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
-                        temp_qty = remaining_qty
+            for operation_row in self.operations:
+                if not operation_row.operation or not batch.batch_qty:
+                    continue
+
+                job_card = frappe.new_doc("Job Card")
+                job_card.work_order = self.name
+                job_card.operation = operation_row.operation
+                job_card.for_quantity = batch.batch_qty
+                job_card.workstation = operation_row.workstation
+                job_card.planned_start_time = frappe.utils.now_datetime()
+                job_card.save()
 
             batch.status = "Created"
 
+        # Update final planned_end_date if needed
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
