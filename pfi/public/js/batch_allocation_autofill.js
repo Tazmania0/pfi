@@ -21,25 +21,23 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
         }
     });
 
-    // If user has entered a value, add it to the sum and validate
     const current_qty = row.batch_qty || 0;
-    const total_with_current = sum + current_qty;
+    const remaining = total_qty - sum;
 
-    if (total_with_current > total_qty) {
+    // Warn if exceeding
+    if (sum + current_qty > total_qty) {
         frappe.msgprint(__('Total allocated quantity exceeds the Work Order quantity.'));
     }
 
-    // Only auto-fill if field is empty or 0
+    // Suggest the remaining value only if current field is empty or 0
     if (!row.batch_qty || row.batch_qty === 0) {
-        const remaining = total_qty - sum;
         if (remaining > 0) {
-            frappe.model.set_value(cdt, cdn, 'batch_qty', remaining);
+            frappe.msgprint(__('Suggested Batch Qty: {0}', [remaining]));
         } else {
             frappe.msgprint(__('All quantity has already been allocated to batches.'));
         }
     }
 }
-
 
 // Used only for autofilling empty new rows
 function prefill_remaining_qty(frm, cdt, cdn) {
