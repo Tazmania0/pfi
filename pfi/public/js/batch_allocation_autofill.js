@@ -5,7 +5,7 @@ frappe.ui.form.on('Batch Allocation', {
     }
 });
 
-frappe.ui.form.on('Work Order', {
+frappe.ui.form.on('Batch Allocation', {
     grid_setup: function(frm) {
 		console.log("Entering grid setup function");
         if (frm.fields_dict.batch_allocations && frm.fields_dict.batch_allocations.grid) {
