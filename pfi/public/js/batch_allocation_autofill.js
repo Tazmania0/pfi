@@ -1,7 +1,7 @@
 frappe.ui.form.on('Batch Allocation', {
     batch_qty: function(frm, cdt, cdn) {
         console.log("Batch Qty changed");
-        auto_fill_remaining_qty(frm, cdt, cdn)
+        auto_fill_remaining_qty(frm, cdt, cdn);
     },
 
     batch_allocation_add: function(frm, cdt, cdn) {
