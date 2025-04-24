@@ -1,19 +1,32 @@
-frappe.ui.form.on('Work Order', {
-    onload: function(frm) {
-        console.log("Work Order form loaded");
-    },
-
-    batch_allocations_add: function(frm, cdt, cdn) {
-        console.log("New batch row added");
+frappe.ui.form.on('Batch Allocation', {
+    batch_qty: function(frm, cdt, cdn) {
+        console.log("Batch Qty changed");
         auto_fill_remaining_qty(frm, cdt, cdn);
     }
 });
 
-frappe.ui.form.on('Batch Allocation', {
-    batch_qty: function(frm, cdt, cdn) {
-        console.log("Batch Qty changed");
-		auto_fill_remaining_qty(frm, cdt, cdn);
-        // Optional: validate or recalculate something here
+frappe.ui.form.on('Work Order', {
+    onload: function(frm) {
+        frm.fields_dict["batch_allocations"].grid.on("add_row", function(grid_row) {
+            const row = grid_row.doc;
+            const total_qty = frm.doc.qty || 0;
+
+            let sum = 0;
+            (frm.doc.batch_allocations || []).forEach(b => {
+                if (b.name !== row.name && b.batch_qty) {
+                    sum += b.batch_qty;
+                }
+            });
+
+            const remaining = total_qty - sum;
+            if (remaining > 0) {
+                row.batch_qty = remaining;
+                frm.refresh_field("batch_allocations");
+                console.log("Auto-filled new batch_qty with:", remaining);
+            } else {
+                frappe.msgprint(__('All quantity has already been allocated to batches.'));
+            }
+        });
     }
 });
 
@@ -35,5 +48,3 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
         frappe.msgprint(__('All quantity has already been allocated to batches.'));
     }
 }
-
-
