@@ -124,17 +124,19 @@ class WorkOrder(ERPNextWorkOrder):
                 if not operation_row.operation or not batch.batch_qty:
                     continue
 
+                if not operation_row.workstation:
+                    frappe.throw(f"Operation '{operation_row.operation}' does not have a workstation assigned.")
+
                 job_card = frappe.new_doc("Job Card")
                 job_card.work_order = self.name
                 job_card.operation = operation_row.operation
+                job_card.workstation = operation_row.workstation  # ✅ required field
                 job_card.for_quantity = batch.batch_qty
-                job_card.workstation = operation_row.workstation
                 job_card.planned_start_time = frappe.utils.now_datetime()
                 job_card.save()
 
             batch.status = "Created"
 
-        # Update final planned_end_date if needed
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
