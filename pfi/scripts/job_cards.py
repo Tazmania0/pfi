@@ -124,10 +124,11 @@ class WorkOrder(ERPNextWorkOrder):
                 if batch.batch_qty > 0:
                     temp_qty = batch.batch_qty
                     while temp_qty > 0:
-                        temp_qty = split_qty_based_on_batch_size(self, row, temp_qty)
+                        remaining_qty = split_qty_based_on_batch_size(self, row, temp_qty)
                         if row.job_card_qty > 0:
-                            row.job_card_qty = batch.batch_qty
+                            row.job_card_qty = temp_qty - remaining_qty
                             self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
+                        temp_qty = remaining_qty
 
             batch.status = "Created"
 
