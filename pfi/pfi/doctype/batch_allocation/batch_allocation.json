@@ -20,7 +20,8 @@
       "fieldtype": "Select",
       "options": "Pending\nCreated",
       "default": "Pending",
-      "in_list_view": 1
+      "in_list_view": 1,
+	  "hidden": 0
     }
   ],
   "permissions": [
