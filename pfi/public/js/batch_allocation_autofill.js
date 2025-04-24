@@ -1,27 +1,36 @@
 frappe.ui.form.on('Work Order', {
-    onload: function (frm) {
-        // You can also attach triggers here if needed
-		frappe.msgprint(__('Custom JS loaded.'));
+    onload: function(frm) {
+        console.log("Work Order form loaded");
     },
 
-    batch_allocations_add: function (frm, cdt, cdn) {
-        const row = locals[cdt][cdn];
-        const total_qty = frm.doc.qty || 0;
-
-        // Sum existing batch_qty values
-        let sum_of_batches = 0;
-        (frm.doc.batch_allocations || []).forEach(b => {
-            if (b.name !== row.name && b.batch_qty) {
-                sum_of_batches += b.batch_qty;
-            }
-        });
-
-        // Fill in the remaining qty
-        let remaining = total_qty - sum_of_batches;
-        if (remaining > 0) {
-            frappe.model.set_value(cdt, cdn, 'batch_qty', remaining);
-        } else {
-            frappe.msgprint(__('All quantity has already been allocated to batches.'));
-        }
+    batch_allocations_add: function(frm, cdt, cdn) {
+        console.log("New batch row added");
+        auto_fill_remaining_qty(frm, cdt, cdn);
     }
 });
+
+frappe.ui.form.on('Batch Allocation', {
+    batch_qty: function(frm, cdt, cdn) {
+        console.log("Batch Qty changed");
+        // Optional: validate or recalculate something here
+    }
+});
+
+function auto_fill_remaining_qty(frm, cdt, cdn) {
+    const row = locals[cdt][cdn];
+    const total_qty = frm.doc.qty || 0;
+
+    let sum = 0;
+    (frm.doc.batch_allocations || []).forEach(b => {
+        if (b.name !== row.name && b.batch_qty) {
+            sum += b.batch_qty;
+        }
+    });
+
+    const remaining = total_qty - sum;
+    if (remaining > 0) {
+        frappe.model.set_value(cdt, cdn, 'batch_qty', remaining);
+    } else {
+        frappe.msgprint(__('All quantity has already been allocated to batches.'));
+    }
+}
