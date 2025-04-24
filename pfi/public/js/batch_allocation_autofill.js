@@ -21,21 +21,23 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
         }
     });
 
-    const current_qty = row.batch_qty || 0;
     const remaining = total_qty - sum;
 
-    // Warn if exceeding
-    if (sum + current_qty > total_qty) {
-        frappe.msgprint(__('Total allocated quantity exceeds the Work Order quantity.'));
+    // If value already exists, validate it
+    if (row.batch_qty && row.batch_qty > 0) {
+        const total_with_current = sum + row.batch_qty;
+        if (total_with_current > total_qty) {
+            const exceeded = total_with_current - total_qty;
+            frappe.msgprint(__('Total allocated quantity exceeds the Work Order quantity by {0}.', [exceeded]));
+        }
+        return;
     }
 
-    // Suggest the remaining value only if current field is empty or 0
-    if (!row.batch_qty || row.batch_qty === 0) {
-        if (remaining > 0) {
-            frappe.msgprint(__('Suggested Batch Qty: {0}', [remaining]));
-        } else {
-            frappe.msgprint(__('All quantity has already been allocated to batches.'));
-        }
+    // Otherwise, suggest the remaining value
+    if (remaining > 0) {
+        frappe.msgprint(__('Suggested Batch Qty: {0}', [remaining]));
+    } else {
+        frappe.msgprint(__('All quantity has already been allocated to batches.'));
     }
 }
 
