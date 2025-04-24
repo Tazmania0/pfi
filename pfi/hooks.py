@@ -128,3 +128,6 @@ override_doctype_class = {
 }
 
 app_include_js = "/assets/pfi/js/batch_allocation_autofill.js"
+doctype_js = {
+    "Work Order": "public/js/batch_allocation_autofill.js"
+}
