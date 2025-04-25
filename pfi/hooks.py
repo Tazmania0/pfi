@@ -23,7 +23,7 @@ app_license = "MIT"
 
 
 # Ensure monkey-patching runs during app boot
-import pfi.scripts.override  # This must be outside any function or dict
+#import pfi.scripts.override  # This must be outside any function or dict
 
 
 
@@ -126,4 +126,8 @@ app_include_py = ["pfi.scripts.override"]  # or a new file like `override.py`
 override_doctype_class = {
     "Work Order": "pfi.scripts.job_cards.WorkOrder"
 }
-        
+
+app_include_js = "/assets/pfi/js/batch_allocation_autofill.js"
+doctype_js = {
+    "Work Order": "public/js/batch_allocation_autofill.js"
+}

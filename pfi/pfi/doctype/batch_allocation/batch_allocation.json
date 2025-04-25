@@ -2,7 +2,7 @@
   "doctype": "DocType",
   "name": "Batch Allocation",
   "module": "Pfi",
-  "custom": 1,
+  "custom": 0,
   "istable": 1,
   "editable_grid": 1,
   "autoname": "hash",
@@ -11,14 +11,17 @@
       "fieldname": "batch_qty",
       "label": "Batch Qty",
       "fieldtype": "Int",
-      "reqd": 1
+      "reqd": 1,
+      "in_list_view": 1
     },
     {
       "fieldname": "status",
       "label": "Status",
       "fieldtype": "Select",
       "options": "Pending\nCreated",
-      "default": "Pending"
+      "default": "Pending",
+      "in_list_view": 1,
+	  "hidden": 0
     }
   ],
   "permissions": [
