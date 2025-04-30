@@ -13,16 +13,34 @@ class CustomJobCard:
             return
 
         wo = frappe.get_doc("Work Order", doc.work_order)
-        existing_qty = sum(
-            frappe.db.get_value("Job Card", jc, "for_quantity") or 0
-            for jc in frappe.get_all("Job Card", filters={"work_order": doc.work_order, "name": ("!=", doc.name)}, pluck="name")
-        )
-        overproduction_percentage = frappe.db.get_single_value("Manufacturing Settings", "overproduction_percentage_for_work_order") or 0
+        overproduction_percentage = frappe.db.get_single_value(
+            "Manufacturing Settings", "overproduction_percentage_for_work_order"
+        ) or 0
+
         allowed_qty = wo.qty * (1 + overproduction_percentage / 100)
 
-        if existing_qty + (doc.for_quantity or 0) > allowed_qty:
-            frappe.throw(f"(job_card.py) Total Job Card quantity ({existing_qty + (doc.for_quantity or 0)}) exceeds allowed Work Order quantity including overproduction  ({allowed_qty}).")
+        # Only count job cards for the first operation
+        operation = doc.operation
+        job_cards = frappe.get_all(
+            "Job Card",
+            filters={
+                "work_order": doc.work_order,
+                "operation": operation,
+                "name": ("!=", doc.name)
+            },
+            pluck="name"
+        )
+        existing_qty = sum(
+            frappe.db.get_value("Job Card", jc, "for_quantity") or 0
+            for jc in job_cards
+        )
 
+        total_with_current = existing_qty + (doc.for_quantity or 0)
+        if total_with_current > allowed_qty:
+            frappe.throw(
+                f"Total Job Card quantity for operation '{operation}' "
+                f"({total_with_current}) exceeds allowed Work Order quantity including overproduction ({allowed_qty})."
+            )
     @staticmethod
     def ensure_valid_quantity(doc):
         if not doc.for_quantity or not isinstance(doc.for_quantity, (int, float)):
