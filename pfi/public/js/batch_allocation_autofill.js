@@ -2,6 +2,7 @@ frappe.ui.form.on('Batch Allocation', {
     batch_qty: function(frm, cdt, cdn) {
         console.log("Batch Qty changed");
         auto_fill_remaining_qty(frm, cdt, cdn);
+		update_batch_allocation_summary(frm);
     },
 
     batch_allocation_add: function(frm, cdt, cdn) {
@@ -72,13 +73,33 @@ function update_batch_allocation_summary(frm) {
         total_allocated += flt(row.batch_qty);
     });
 
-    let overproduction_percentage = flt(frappe.defaults.get_default("overproduction_percentage_for_work_order")) || 0;
-    let allowed_qty = flt(frm.doc.qty) * (1 + overproduction_percentage / 100);
-    let remaining_qty = allowed_qty - total_allocated;
+    const overproduction_percentage = flt(frappe.sys_defaults.overproduction_percentage_for_work_order) || 0;
+    const allowed_qty = flt(frm.doc.qty) * (1 + overproduction_percentage / 100);
+    const remaining_qty = allowed_qty - total_allocated;
 
-    let summary_html = `<div style="padding: 8px; background-color: #f7f7f7; border: 1px solid #d1d8dd; border-radius: 4px;">
-        <strong>Total Allocated:</strong> ${total_allocated} / ${allowed_qty} (Remaining: ${remaining_qty})
-    </div>`;
+    const html = `
+        <div style="padding: 8px; background: #f5f7fa; border: 1px solid #d1d8dd; border-radius: 4px; margin-bottom: 10px;">
+            <strong>Batch Allocation Summary:</strong><br>
+            Allocated: <strong>${total_allocated}</strong> / Allowed: <strong>${allowed_qty}</strong>
+            (${remaining_qty >= 0 ? 'Remaining' : 'Exceeded'}: <strong style="color: ${remaining_qty >= 0 ? 'green' : 'red'}">${remaining_qty}</strong>)
+        </div>
+    `;
 
-    frm.fields_dict.batch_allocation_summary.$wrapper.html(summary_html);
+    if (frm.fields_dict.batch_allocation_summary) {
+        frm.fields_dict.batch_allocation_summary.$wrapper.html(html);
+    }
 }
+
+// Trigger on Work Order refresh or qty change
+frappe.ui.form.on('Work Order', {
+    onload(frm) {
+        update_batch_allocation_summary(frm);
+    },
+    refresh(frm) {
+        update_batch_allocation_summary(frm);
+    },
+    qty(frm) {
+        update_batch_allocation_summary(frm);
+    }
+});
+
