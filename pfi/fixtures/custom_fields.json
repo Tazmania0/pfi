@@ -10,5 +10,15 @@
         "options": "Batch Allocation",
         "owner": "Administrator",  
         "hidden": 0  
+    },
+	{
+      "doctype": "Custom Field",
+      "dt": "Work Order",
+      "fieldname": "batch_allocation_summary",
+      "label": "Batch Allocation Summary",
+      "fieldtype": "HTML",
+      "insert_after": "project",  // or "batch_allocations" if you want it below the table
+      "read_only": 1,
+      "print_hide": 1
     }
 ]
