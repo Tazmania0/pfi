@@ -2,13 +2,19 @@ frappe.ui.form.on('Batch Allocation', {
     batch_qty: function(frm, cdt, cdn) {
         console.log("Batch Qty changed");
         auto_fill_remaining_qty(frm, cdt, cdn);
-//		update_batch_allocation_summary(frm);
+		update_batch_allocation_summary(frm);
     },
 
     batch_allocation_add: function(frm, cdt, cdn) {
         console.log("New Batch Allocation row added");
         prefill_remaining_qty(frm, cdt, cdn);
+    },
+	
+	batch_qty_add: function(frm, cdt, cdn) {
+        console.log("New Batch Allocation row added 1");
+        prefill_remaining_qty(frm, cdt, cdn);
     }
+	
 });
 
 function auto_fill_remaining_qty(frm, cdt, cdn) {
