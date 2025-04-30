@@ -13,6 +13,7 @@
     },
 	{
       "doctype": "Custom Field",
+	  "name": "Work Order-batch_allocations_summary",
       "dt": "Work Order",
       "fieldname": "batch_allocation_summary",
       "label": "Batch Allocation Summary",
