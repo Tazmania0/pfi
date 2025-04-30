@@ -17,7 +17,7 @@
       "fieldname": "batch_allocation_summary",
       "label": "Batch Allocation Summary",
       "fieldtype": "HTML",
-      "insert_after": "project",  // or "batch_allocations" if you want it below the table
+      "insert_after": "project",  
       "read_only": 1,
       "print_hide": 1
     }
