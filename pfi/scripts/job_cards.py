@@ -5,14 +5,14 @@ class CustomJobCard:
     @staticmethod
     def validate(doc):
         #Add debug log entering in custom Job card validate
-        print("Debug: Entering CustomJobCard.validate")
+        frappe.msgprint("Debug: Entering CustomJobCard.validate")
         CustomJobCard.ensure_quantity_does_not_exceed_work_order(doc)
         CustomJobCard.ensure_valid_quantity(doc)
 
     @staticmethod
     def ensure_quantity_does_not_exceed_work_order(doc):
         #Add debug log entering in custom Job card validate
-        print("Debug: Entering CustomJobCard.ensure_quantity_does_not_exceed_work_order")
+        frappe.msgprint("Debug: Entering CustomJobCard.ensure_quantity_does_not_exceed_work_order")
         if not doc.work_order:
             return
 
@@ -87,7 +87,7 @@ def create_job_cards_from_splits(work_order_name):
 
 def validate_job_card(doc, method):
     #Add debug log entering in custom Job card validate
-    print("Debug: Entering validate_job_card (to run CustomJobCard.validate)")
+    frappe.msgprint("Debug: Entering validate_job_card (to run CustomJobCard.validate)")
     CustomJobCard.validate(doc)
     
     
