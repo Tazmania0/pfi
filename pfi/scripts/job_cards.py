@@ -134,3 +134,4 @@ class WorkOrder(ERPNextWorkOrder):
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
+            
