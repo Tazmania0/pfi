@@ -21,7 +21,7 @@ class CustomJobCard:
         allowed_qty = wo.qty * (1 + overproduction_percentage / 100)
 
         if existing_qty + (doc.for_quantity or 0) > allowed_qty:
-            frappe.throw(f"Total Job Card quantity ({existing_qty + (doc.for_quantity or 0)}) exceeds allowed Work Order quantity including overproduction ({allowed_qty}).")
+            frappe.throw(f"(job_card.py) Total Job Card quantity ({existing_qty + (doc.for_quantity or 0)}) exceeds allowed Work Order quantity including overproduction  ({allowed_qty}).")
 
     @staticmethod
     def ensure_valid_quantity(doc):
@@ -38,7 +38,7 @@ def validate_batch_allocations(work_order, method=None):
 
     if total_batch_qty > allowed_qty:
         frappe.throw(
-            f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction (job_card.py) ({allowed_qty})."
+            f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction ({allowed_qty})."
         )
 
         
