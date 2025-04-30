@@ -38,7 +38,7 @@ def validate_batch_allocations(work_order, method=None):
 
     if total_batch_qty > allowed_qty:
         frappe.throw(
-            f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction ({allowed_qty})."
+            f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction (job_card.py) ({allowed_qty})."
         )
 
         
