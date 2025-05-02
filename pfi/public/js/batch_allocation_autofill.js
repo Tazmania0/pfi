@@ -1,3 +1,26 @@
+frappe.ui.form.on('Work Order', {
+    onload(frm) {
+        console.log("WORKORDER: onload!");
+		update_batch_allocation_summary(frm);
+    },
+	refresh: function(frm) {
+	
+        console.log("WORKORDER: refresh!");
+	 // Initialize flag to check if handler is already attached
+        if (!frm._qtyHandlerAttached) {
+            frm.trigger('qty');
+            frm._qtyHandlerAttached = true;
+        }
+		update_batch_allocation_summary(frm);
+    },
+	qty(frm) {
+		 console.log("WORKORDER: qty!");
+        	update_batch_allocation_summary(frm);
+    }
+
+})
+
+
 frappe.ui.form.on('Batch Allocation', {
     batch_qty: function(frm, cdt, cdn) {
     	// Ensure this runs only once per row addition
@@ -58,27 +81,7 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
     }
 }
 
-frappe.ui.form.on('Work Order', {
-    onload(frm) {
-        console.log("WORKORDER: onload!");
-		update_batch_allocation_summary(frm);
-    },
-	refresh: function(frm) {
-	
-        console.log("WORKORDER: refresh!");
-	 // Initialize flag to check if handler is already attached
-        if (!frm._qtyHandlerAttached) {
-            frm.trigger('qty');
-            frm._qtyHandlerAttached = true;
-        }
-		update_batch_allocation_summary(frm);
-    },
-	qty(frm) {
-		 console.log("WORKORDER: qty!");
-        	update_batch_allocation_summary(frm);
-    }
 
-});
 
 
 function update_batch_allocation_summary(frm) {
