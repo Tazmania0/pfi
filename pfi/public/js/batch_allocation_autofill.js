@@ -3,27 +3,13 @@ frappe.ui.form.on('Batch Allocation', {
     	// Ensure this runs only once per row addition
         if (!locals[cdt][cdn].__batch_qty_initialized) {
             // Your batch quantity logic
-            	console.log("Batch Qty changed");
+            console.log("Batch Qty changed");
         	auto_fill_remaining_qty(frm, cdt, cdn);
-		update_batch_allocation_summary(frm);
+			update_batch_allocation_summary(frm);
             // Set flag to prevent duplicate execution
             locals[cdt][cdn].__batch_qty_initialized = true;
         }    
-
-
-
-    },
-
-    batch_allocation_add: function(frm, cdt, cdn) {
-        console.log("New Batch Allocation row added");
-        prefill_remaining_qty(frm, cdt, cdn);
-    },
-	
-	batch_qty_add: function(frm, cdt, cdn) {
-        console.log("New Batch Allocation row added 1");
-        prefill_remaining_qty(frm, cdt, cdn);
     }
-	
 });
 
 function auto_fill_remaining_qty(frm, cdt, cdn) {
@@ -57,15 +43,6 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
     }
 }
 
-// Used only for autofilling empty new rows
-function prefill_remaining_qty(frm, cdt, cdn) {
-    const row = locals[cdt][cdn];
-    if (!row.batch_qty) {
-        auto_fill_remaining_qty(frm, cdt, cdn);
-    }
-}
-
-
 frappe.ui.form.on('Work Order', {
     onload(frm) {
         console.log("WORKORDER: onload! - OK ");
@@ -79,18 +56,6 @@ frappe.ui.form.on('Work Order', {
             frm.trigger('qty');
             frm._qtyHandlerAttached = true;
         }
-		update_batch_allocation_summary(frm);
-    },
-    batch_allocations_on_form_rendered: function(frm) {
-        console.log("WORKORDER: batch_allocations_on_form_rendered! ");
-		update_batch_allocation_summary(frm);
-    },
-    batch_allocations_add: function(frm) {
-        console.log("WORKORDER: batch_allocations_add! ");
-		update_batch_allocation_summary(frm);
-    },
-    batch_allocations_remove: function(frm) {
-        console.log("WORKORDER: batch_allocations_remove! ");
 		update_batch_allocation_summary(frm);
     },
 	qty(frm) {
