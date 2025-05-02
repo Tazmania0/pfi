@@ -58,16 +58,28 @@ function prefill_remaining_qty(frm, cdt, cdn) {
 
 
 frappe.ui.form.on('Work Order', {
-    refresh: function(frm) {
-        update_batch_allocation_summary(frm);
+    onload(frm) {
+        console.log("WORKORDER: onload! ");
+		update_batch_allocation_summary(frm);
+    },
+	refresh: function(frm) {
+        console.log("WORKORDER: refresh! ");
+		update_batch_allocation_summary(frm);
     },
     batch_allocations_on_form_rendered: function(frm) {
-        update_batch_allocation_summary(frm);
+        console.log("WORKORDER: batch_allocations_on_form_rendered! ");
+		update_batch_allocation_summary(frm);
     },
     batch_allocations_add: function(frm) {
-        update_batch_allocation_summary(frm);
+        console.log("WORKORDER: batch_allocations_add! ");
+		update_batch_allocation_summary(frm);
     },
     batch_allocations_remove: function(frm) {
+        console.log("WORKORDER: batch_allocations_remove! ");
+		update_batch_allocation_summary(frm);
+    },
+	qty(frm) {
+		 console.log("WORKORDER: qty! ");
         update_batch_allocation_summary(frm);
     }
 });
@@ -95,17 +107,4 @@ function update_batch_allocation_summary(frm) {
         frm.fields_dict.batch_allocation_summary.$wrapper.html(html);
     }
 }
-
-// Trigger on Work Order refresh or qty change
-frappe.ui.form.on('Work Order', {
-    onload(frm) {
-        update_batch_allocation_summary(frm);
-    },
-    refresh(frm) {
-        update_batch_allocation_summary(frm);
-    },
-    qty(frm) {
-        update_batch_allocation_summary(frm);
-    }
-});
 
