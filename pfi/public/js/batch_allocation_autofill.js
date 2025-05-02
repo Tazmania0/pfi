@@ -1,26 +1,3 @@
-frappe.ui.form.on('Batch Allocation', {
-    batch_qty: function(frm, cdt, cdn) {
-    	// Ensure this runs only once per row addition
-        if (!locals[cdt][cdn].__batch_qty_initialized) {
-            // Your batch quantity logic
-            console.log("Batch Qty changed");
-        	auto_fill_remaining_qty(frm, cdt, cdn);
-			
-            // Set flag to prevent duplicate execution
-            locals[cdt][cdn].__batch_qty_initialized = true;
-        } 
-		update_batch_allocation_summary(frm);	
-    },
-	status_remove: function(frm, cdt, cdn) {
-			 console.log("Batch Qty removed");
-			 update_batch_allocation_summary(frm);
-	},
-	before_status_remove: function(frm, cdt, cdn) {
-			 console.log("Batch Qty to be removed");
-			 update_batch_allocation_summary(frm);
-	}
-});
-
 function auto_fill_remaining_qty(frm, cdt, cdn) {
     const row = locals[cdt][cdn];
     const total_qty = frm.doc.qty || 0;
@@ -70,7 +47,35 @@ frappe.ui.form.on('Work Order', {
 	qty(frm) {
 		 console.log("WORKORDER: qty!");
         	update_batch_allocation_summary(frm);
-    }
+    },
+	///////////
+	frappe.ui.form.on('Batch Allocation', {
+    batch_qty: function(frm, cdt, cdn) {
+    	// Ensure this runs only once per row addition
+        if (!locals[cdt][cdn].__batch_qty_initialized) {
+            // Your batch quantity logic
+            console.log("Batch Qty changed");
+        	auto_fill_remaining_qty(frm, cdt, cdn);
+			
+            // Set flag to prevent duplicate execution
+            locals[cdt][cdn].__batch_qty_initialized = true;
+        } 
+		update_batch_allocation_summary(frm);	
+    },
+	status_remove: function(frm, cdt, cdn) {
+			 console.log("Batch Qty removed");
+			 update_batch_allocation_summary(frm);
+	},
+	before_status_remove: function(frm, cdt, cdn) {
+			 console.log("Batch Qty to be removed");
+			 update_batch_allocation_summary(frm);
+	}
+});
+	
+	
+	
+	
+	
 });
 
 
