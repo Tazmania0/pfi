@@ -112,14 +112,28 @@ function update_batch_allocation_summary(frm) {
 
     const html = `
         <div style="padding: 8px; background: #f5f7fa; border: 1px solid #d1d8dd; border-radius: 4px; margin-bottom: 10px;">
-            <strong>Batch Allocation Summary:</strong><br>
-            Allocated: <strong>${total_allocated}</strong> / Allowed: <strong>${allowed_qty}</strong>
-            (${remaining_qty >= 0 ? 'Remaining' : 'Exceeded'}: <strong style="color: ${remaining_qty >= 0 ? 'green' : 'red'}">${remaining_qty}</strong>)
+            <div style="display: flex; justify-content: space-between; align-items: center">
+                <div>
+	    	    <strong>Batch Allocation Summary:</strong><br>
+		    Allocated: <strong>${total_allocated}</strong> / Allowed: <strong>${allowed_qty}</strong>
+		    (${remaining_qty >= 0 ? 'Remaining' : 'Exceeded'}: <strong style="color: ${remaining_qty >= 0 ? 'green' : 'red'}">${remaining_qty}</strong>)
+        	</div>
+		<button class="btn btn-default btn-xs recalculate-batch-summary" type="button" 
+                    style="margin-left: 10px; align-self: flex-end">
+                    ${__('Recalculate')}
+                </button>
+            </div>
         </div>
     `;
 
     if (frm.fields_dict.batch_allocation_summary) {
         frm.fields_dict.batch_allocation_summary.$wrapper.html(html);
+        
+        // Add click handler for the recalculate button
+        frm.fields_dict.batch_allocation_summary.$wrapper.off('click', '.recalculate-batch-summary')
+            .on('click', '.recalculate-batch-summary', function() {
+                update_batch_allocation_summary(frm);
+            });
     }
 }
 
