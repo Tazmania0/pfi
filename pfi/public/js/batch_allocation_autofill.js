@@ -9,7 +9,11 @@ frappe.ui.form.on('Batch Allocation', {
             // Set flag to prevent duplicate execution
             locals[cdt][cdn].__batch_qty_initialized = true;
         }    
-    }
+    },
+	batch_qty_remove: function(frm, cdt, cdn) {
+			 console.log("Batch Qty removed");
+			 update_batch_allocation_summary(frm);
+	}
 });
 
 function auto_fill_remaining_qty(frm, cdt, cdn) {
@@ -45,12 +49,12 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
 
 frappe.ui.form.on('Work Order', {
     onload(frm) {
-        console.log("WORKORDER: onload! - OK ");
+        console.log("WORKORDER: onload!");
 		update_batch_allocation_summary(frm);
     },
 	refresh: function(frm) {
 	
-        console.log("WORKORDER: refresh! - OK ");
+        console.log("WORKORDER: refresh!");
 	 // Initialize flag to check if handler is already attached
         if (!frm._qtyHandlerAttached) {
             frm.trigger('qty');
@@ -59,7 +63,7 @@ frappe.ui.form.on('Work Order', {
 		update_batch_allocation_summary(frm);
     },
 	qty(frm) {
-		 console.log("WORKORDER: qty! - OK ");
+		 console.log("WORKORDER: qty!");
         	update_batch_allocation_summary(frm);
     }
 });
