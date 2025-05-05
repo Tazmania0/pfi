@@ -131,3 +131,5 @@ app_include_js = "/assets/pfi/js/batch_allocation_autofill.js"
 doctype_js = {
     "Work Order": "public/js/batch_allocation_autofill.js"
 }
+
+before_uninstall = "pfi.scripts.uninstall.remove_custom_reports"
