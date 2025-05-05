@@ -114,6 +114,7 @@ from frappe.model.document import Document
 from frappe.utils import cint
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERPNextWorkOrder
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
+from erpnext.manufacturing.doctype.work_order.work_order import get_planned_start_end_time
 
 class WorkOrder(ERPNextWorkOrder):
     def create_job_card(self):
@@ -160,7 +161,7 @@ class WorkOrder(ERPNextWorkOrder):
                             job_card.workstation = row.workstation
 
                             # Compute timings
-                            start_time, end_time = self.get_planned_start_end_time(
+                            start_time, end_time = get_planned_start_end_time(
                                 row, batch.batch_qty, plan_days, enable_capacity_planning
                             )
                             job_card.planned_start_time = start_time
