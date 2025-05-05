@@ -20,7 +20,6 @@ frappe.ui.form.on('Work Order', {
 
 })
 
-
 frappe.ui.form.on('Batch Allocation', {
     batch_qty: function(frm, cdt, cdn) {
     	// Ensure this runs only once per row addition
@@ -34,24 +33,12 @@ frappe.ui.form.on('Batch Allocation', {
         } 
 		update_batch_allocation_summary(frm);	
     },
-	status_remove: function(frm, cdt, cdn) {
-			 console.log("Batch Qty removed");
-			 update_batch_allocation_summary(frm);
-	},
-	before_status_remove: function(frm, cdt, cdn) {
-			 console.log("Batch Qty to be removed");
-			 update_batch_allocation_summary(frm);
-	},
 	batch_allocations_remove: function(frm, cdt, cdn) {
 			 console.log("Batch allocations Qty removed");
 			 update_batch_allocation_summary(frm);
 	}
 });
-	
-	
-	
-	
-	
+
 
 
 function auto_fill_remaining_qty(frm, cdt, cdn) {
