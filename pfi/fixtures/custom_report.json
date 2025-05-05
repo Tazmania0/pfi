@@ -59,7 +59,8 @@
     {
       "fieldname": "from",
       "label": "From Date",
-      "fieldtype": "Date"
+      "fieldtype": "Date",
+	  "default": "Today"
     },
     {
       "fieldname": "until",
