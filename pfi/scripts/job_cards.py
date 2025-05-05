@@ -151,7 +151,24 @@ class WorkOrder(ERPNextWorkOrder):
                         temp_qty = split_qty_based_on_batch_size(self, row, temp_qty)
                         if row.job_card_qty > 0:
                             row.job_card_qty = batch.batch_qty
-                            self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
+                            #Try to calculate a correct jobcard timelog 
+                            # Create the Job Card doc manually to inject accurate timings
+                            job_card = frappe.new_doc("Job Card")
+                            job_card.work_order = self.name
+                            job_card.operation = row.operation
+                            job_card.for_quantity = batch.batch_qty
+                            job_card.workstation = row.workstation
+
+                            # Compute timings
+                            start_time, end_time = self.get_planned_start_end_time(
+                                row, batch.batch_qty, plan_days, enable_capacity_planning
+                            )
+                            job_card.planned_start_time = start_time
+                            job_card.planned_end_time = end_time
+
+                            job_card.save()
+                            #end calculate correct jobcard timelog - comment out prepare_data_for_job_card
+                            #self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
 
             batch.status = "Created"
 
