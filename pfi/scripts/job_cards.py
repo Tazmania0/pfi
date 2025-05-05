@@ -162,7 +162,7 @@ class WorkOrder(ERPNextWorkOrder):
                             job_card.workstation = row.workstation
 
                             # Compute timings
-                            start_time, end_time = compute_planned_start_end_time(self, row, batch.batch_qty, plan_days
+                            start_time, end_time = self.compute_planned_start_end_time(self, row, batch.batch_qty, plan_days
 )
                             job_card.planned_start_time = start_time
                             job_card.planned_end_time = end_time
