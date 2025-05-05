@@ -41,6 +41,10 @@ frappe.ui.form.on('Batch Allocation', {
 	before_status_remove: function(frm, cdt, cdn) {
 			 console.log("Batch Qty to be removed");
 			 update_batch_allocation_summary(frm);
+	},
+	batch_allocations_remove: function(frm, cdt, cdn) {
+			 console.log("Batch allocations Qty removed");
+			 update_batch_allocation_summary(frm);
 	}
 });
 	
