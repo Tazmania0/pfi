@@ -47,7 +47,7 @@
 },
 {
   "doctype": "Report",
-  "report_name": "Executions - f2-PFI",
+  "report_name": "Executions - f2",
   "name": "Executions - f2-PFI",
   "ref_doctype": "Job Card",
   "report_type": "Query Report",
