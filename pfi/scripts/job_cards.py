@@ -114,7 +114,8 @@ from frappe.model.document import Document
 from frappe.utils import cint
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERPNextWorkOrder
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
-from erpnext.manufacturing.doctype.work_order.work_order import get_planned_start_end_time
+from frappe.utils import add_to_datetime, now_datetime
+from frappe.utils import flt
 
 class WorkOrder(ERPNextWorkOrder):
     def create_job_card(self):
@@ -161,9 +162,8 @@ class WorkOrder(ERPNextWorkOrder):
                             job_card.workstation = row.workstation
 
                             # Compute timings
-                            start_time, end_time = get_planned_start_end_time(
-                                row, batch.batch_qty, plan_days, enable_capacity_planning
-                            )
+                            start_time, end_time = compute_planned_start_end_time(self, row, batch.batch_qty, plan_days
+)
                             job_card.planned_start_time = start_time
                             job_card.planned_end_time = end_time
 
@@ -176,4 +176,21 @@ class WorkOrder(ERPNextWorkOrder):
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
-            
+
+
+    def compute_planned_start_end_time(work_order, operation, qty_to_make, plan_days=None):
+        # Default plan start
+        planned_start = work_order.planned_start_date or now_datetime()
+
+        # Time per unit in minutes
+        time_in_mins = flt(operation.time_in_mins) * flt(qty_to_make) / flt(work_order.qty)
+
+        # Planned end is start + time
+        planned_end = add_to_datetime(planned_start, minutes=time_in_mins)
+
+        # Optionally shift by planning offset
+        if plan_days:
+            planned_start = add_to_datetime(planned_start, days=plan_days)
+            planned_end = add_to_datetime(planned_end, days=plan_days)
+
+        return planned_start, planned_end
