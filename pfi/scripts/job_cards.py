@@ -114,8 +114,8 @@ from frappe.model.document import Document
 from frappe.utils import cint
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERPNextWorkOrder
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
-from frappe.utils import add_to_datetime, now_datetime
-from frappe.utils import flt
+from datetime import timedelta
+from frappe.utils import get_datetime, now_datetime, flt
 
 class WorkOrder(ERPNextWorkOrder):
     def create_job_card(self):
@@ -179,18 +179,22 @@ class WorkOrder(ERPNextWorkOrder):
 
 
     def compute_planned_start_end_time(work_order, operation, qty_to_make, plan_days=None):
-        # Default plan start
-        planned_start = work_order.planned_start_date or now_datetime()
+        # Default start time
+        planned_start = get_datetime(work_order.planned_start_date) if work_order.planned_start_date else now_datetime()
 
-        # Time per unit in minutes
+        # Calculate operation time in minutes scaled to batch quantity
         time_in_mins = flt(operation.time_in_mins) * flt(qty_to_make) / flt(work_order.qty)
 
-        # Planned end is start + time
-        planned_end = add_to_datetime(planned_start, minutes=time_in_mins)
+        # Compute timedelta
+        delta = timedelta(minutes=time_in_mins)
 
-        # Optionally shift by planning offset
+        # Compute start and end
+        start = planned_start
+        end = start + delta
+
+        # Optional planning offset
         if plan_days:
-            planned_start = add_to_datetime(planned_start, days=plan_days)
-            planned_end = add_to_datetime(planned_end, days=plan_days)
+            start += timedelta(days=plan_days)
+            end += timedelta(days=plan_days)
 
-        return planned_start, planned_end
+        return start, end
