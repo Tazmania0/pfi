@@ -162,7 +162,7 @@ class WorkOrder(ERPNextWorkOrder):
                             job_card.workstation = row.workstation
 
                             # Compute timings
-                            start_time, end_time = self.compute_planned_start_end_time(self, row, batch.batch_qty, plan_days
+                            start_time, end_time = self.compute_planned_start_end_time(row, batch.batch_qty, plan_days
 )
                             job_card.planned_start_time = start_time
                             job_card.planned_end_time = end_time
@@ -177,13 +177,12 @@ class WorkOrder(ERPNextWorkOrder):
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
 
-
-    def compute_planned_start_end_time(work_order, operation, qty_to_make, plan_days=None):
+    def compute_planned_start_end_time(self, operation, qty_to_make, plan_days=None):
         # Default start time
-        planned_start = get_datetime(work_order.planned_start_date) if work_order.planned_start_date else now_datetime()
+        planned_start = get_datetime(self.planned_start_date) if self.planned_start_date else now_datetime()
 
         # Calculate operation time in minutes scaled to batch quantity
-        time_in_mins = flt(operation.time_in_mins) * flt(qty_to_make) / flt(work_order.qty)
+        time_in_mins = flt(operation.time_in_mins) * flt(qty_to_make) / flt(self.qty)
 
         # Compute timedelta
         delta = timedelta(minutes=time_in_mins)
