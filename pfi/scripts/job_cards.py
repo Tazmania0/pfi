@@ -65,22 +65,22 @@ def validate_batch_allocations(work_order, method=None):
 
         
         
-@frappe.whitelist()
-def create_job_cards_from_splits(work_order_name):
-    work_order = frappe.get_doc("Work Order", work_order_name)
-    frappe.msgprint("Calling Validate batch allocations..")
-    validate_batch_allocations(work_order)
-    for row in work_order.batch_allocations:
-        if row.status != "Pending":
-            continue
-        job_card = frappe.new_doc("Job Card")
-        job_card.work_order = work_order.name
-        job_card.for_quantity = row.batch_qty
-        job_card.operation = work_order.operations[0].operation  # Customize if multiple ops
-        job_card.save()
-        row.status = "Created"
-    work_order.save()
-    return "Job Cards Created"
+#@frappe.whitelist()
+#def create_job_cards_from_splits(work_order_name):
+#    work_order = frappe.get_doc("Work Order", work_order_name)
+#    frappe.msgprint("Calling Validate batch allocations..")
+#    validate_batch_allocations(work_order)
+#    for row in work_order.batch_allocations:
+#        if row.status != "Pending":
+#            continue
+#        job_card = frappe.new_doc("Job Card")
+#        job_card.work_order = work_order.name
+#        job_card.for_quantity = row.batch_qty
+#        job_card.operation = work_order.operations[0].operation  # Customize if multiple ops
+#        job_card.save()
+#        row.status = "Created"
+#    work_order.save()
+#    return "Job Cards Created"
 
 
 # Validate wrapper to be called from hooks
@@ -160,6 +160,9 @@ class WorkOrder(ERPNextWorkOrder):
                             job_card.operation = row.operation
                             job_card.for_quantity = batch.batch_qty
                             #job_card.workstation = row.workstation
+                            for row in self.operations:
+                                if not row.workstation:
+                                    row.workstation = frappe.get_value("Workstation", {"workstation_type": row.workstation_type}, "name")
 
                             # Compute timings
                             start_time, end_time = self.compute_planned_start_end_time(row, batch.batch_qty, plan_days
