@@ -165,7 +165,8 @@ class WorkOrder(ERPNextWorkOrder):
     #Time calcaulation fix 
     def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
         from copy import deepcopy
-
+        from frappe.utils import flt
+        
         # Work on a copy of the row to prevent modifying original operation
         local_row = deepcopy(row)
 
