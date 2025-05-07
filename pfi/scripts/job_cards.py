@@ -116,7 +116,7 @@ from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERP
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
 
 class WorkOrder(ERPNextWorkOrder):
-    def create_job_card(self):
+    def create_job_card(self, row=None, auto_create=False, enable_capacity_planning=False):
         manufacturing_settings_doc = frappe.get_doc("Manufacturing Settings")
 
         enable_capacity_planning = not cint(manufacturing_settings_doc.disable_capacity_planning)
