@@ -116,7 +116,7 @@ from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERP
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
 
 class WorkOrder(ERPNextWorkOrder):
-    def create_job_card(self, row=None, auto_create=False, enable_capacity_planning=False):
+    def create_job_card(self):
         manufacturing_settings_doc = frappe.get_doc("Manufacturing Settings")
 
         enable_capacity_planning = not cint(manufacturing_settings_doc.disable_capacity_planning)
@@ -166,6 +166,8 @@ class WorkOrder(ERPNextWorkOrder):
     #Time calcaulation fix 
     def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
         from copy import deepcopy
+        from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
+
         #from frappe.utils.data import flt
         
         # Work on a copy of the row to prevent modifying original operation
@@ -184,7 +186,7 @@ class WorkOrder(ERPNextWorkOrder):
         self.set_operation_start_end_time(index, local_row)
 
         # Create job card with adjusted time
-        job_card_doc = ERPNextWorkOrder.create_job_card(self,
+        job_card_doc = create_job_card_standalone(self,
                 local_row, auto_create=True, enable_capacity_planning=enable_capacity_planning
         )
 
