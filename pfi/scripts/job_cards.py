@@ -168,7 +168,8 @@ class WorkOrder(ERPNextWorkOrder):
         from copy import deepcopy
         from frappe.utils import date_diff
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
-
+        from collections import defaultdict
+        
         #from frappe.utils.data import flt
         
         # Work on a copy of the row to prevent modifying original operation
@@ -182,10 +183,21 @@ class WorkOrder(ERPNextWorkOrder):
             )
         else:
             local_row.time_in_mins = row.time_in_mins
-
+        
+        # Group rows by sequence_id
+        operations_by_sequence = defaultdict(list)
+        for idx, row in enumerate(rows):  # assuming `rows` is the list of local_rows for the current batch
+            operations_by_sequence[row.sequence_id].append(row)
+                
+        
         # Use same logic as ERPNext to calculate time range
-        self.set_operation_start_end_time(index, local_row)
-
+        #self.set_operation_start_end_time(index, local_row)
+        
+        # Apply batchwise timing logic
+        self.set_batchwise_operation_times(operations_by_sequence)
+        
+        
+        
         # Create job card with adjusted time
         job_card_doc = create_job_card_standalone(self,
                 local_row, auto_create=True, enable_capacity_planning=enable_capacity_planning
@@ -212,3 +224,58 @@ class WorkOrder(ERPNextWorkOrder):
 
             local_row.db_update()
             
+
+
+        def set_batchwise_operation_times(self, operations_by_sequence):
+            """
+            Set operation times for each batch assuming best-case parallel processing within a sequence.
+            Each sequence group starts after all operations from the previous sequence are finished.
+            This function assumes operations in a sequence can be done in parallel if resources allow it.
+            """
+            from dateutil.relativedelta import relativedelta
+            from frappe.utils import get_datetime
+            import frappe
+
+            current_start = get_datetime(self.planned_start_date)
+
+            for sequence_id in sorted(operations_by_sequence):
+                rows = operations_by_sequence[sequence_id]
+
+                # Best-case: max duration among rows
+                max_duration = max(row.time_in_mins for row in rows)
+                sequence_duration = relativedelta(minutes=max_duration)
+
+                for row in rows:
+                    # Simulate as if each operation was the first one
+                    row.planned_start_time = current_start
+                    row.planned_end_time = current_start + relativedelta(minutes=row.time_in_mins)
+
+                    if row.planned_start_time == row.planned_end_time:
+                        frappe.throw(_("Planned start time cannot be the same as end time"))
+
+                # Advance current start by max duration (best-case parallelism)
+                current_start += sequence_duration
+
+
+        def set_operation_start_end_time(self, idx, row):
+            """
+            Override standard operation timing logic.
+            If this is called directly (not in batchwise mode), fall back to original logic.
+            """
+            from frappe.utils import get_datetime
+            from dateutil.relativedelta import relativedelta
+            from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
+
+            if idx == 0:
+                row.planned_start_time = self.planned_start_date
+            else:
+                # Fall back to sequential assumption
+                row.planned_start_time = (
+                    get_datetime(self.operations[idx - 1].planned_end_time)
+                    + get_mins_between_operations()
+                )
+
+            row.planned_end_time = get_datetime(row.planned_start_time) + relativedelta(minutes=row.time_in_mins)
+
+            if row.planned_start_time == row.planned_end_time:
+                frappe.throw(_("Capacity Planning Error, planned start time can not be same as end time"))
