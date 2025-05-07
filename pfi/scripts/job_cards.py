@@ -111,7 +111,7 @@ def validate_job_card(doc, method):
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint
+from frappe.utils import cint, flt
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERPNextWorkOrder
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
 
@@ -166,7 +166,7 @@ class WorkOrder(ERPNextWorkOrder):
     #Time calcaulation fix 
     def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
         from copy import deepcopy
-        from frappe.utils.data import flt
+        #from frappe.utils.data import flt
         
         # Work on a copy of the row to prevent modifying original operation
         local_row = deepcopy(row)
