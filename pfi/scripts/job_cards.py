@@ -161,7 +161,7 @@ class WorkOrder(ERPNextWorkOrder):
             self.db_set("planned_end_date", planned_end_date)
 
 
-    from frappe.utils import flt
+    from frappe.utils.data import flt
     
     #Time calcaulation fix 
     def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
