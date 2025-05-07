@@ -151,10 +151,59 @@ class WorkOrder(ERPNextWorkOrder):
                         temp_qty = split_qty_based_on_batch_size(self, row, temp_qty)
                         if row.job_card_qty > 0:
                             row.job_card_qty = batch.batch_qty
-                            self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
+                            #self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
+                            self.prepare_data_for_job_card_batchwise(row, index, plan_days, enable_capacity_planning)
 
             batch.status = "Created"
 
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
+
+
+
+    #Time calcaulation fix 
+    def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
+        from copy import deepcopy
+
+        # Work on a copy of the row to prevent modifying original operation
+        local_row = deepcopy(row)
+
+        # Adjust time proportionally to the job_card_qty (which reflects batch qty)
+        if flt(self.qty):
+            local_row.time_in_mins = max(
+                1,
+                flt(row.time_in_mins) * flt(row.job_card_qty) / flt(self.qty)
+            )
+        else:
+            local_row.time_in_mins = row.time_in_mins
+
+        # Use same logic as ERPNext to calculate time range
+        self.set_operation_start_end_time(index, local_row)
+
+        # Create job card with adjusted time
+        job_card_doc = create_job_card(
+            self, local_row, auto_create=True, enable_capacity_planning=enable_capacity_planning
+        )
+
+        # Update planning info if enabled
+        if enable_capacity_planning and job_card_doc:
+            local_row.planned_start_time = job_card_doc.scheduled_time_logs[-1].from_time
+            local_row.planned_end_time = job_card_doc.scheduled_time_logs[-1].to_time
+
+            if date_diff(local_row.planned_end_time, self.planned_start_date) > plan_days:
+                frappe.message_log.pop()
+                frappe.throw(
+                    _(
+                        "Unable to find the time slot in the next {0} days for the operation {1}. "
+                        "Please increase the 'Capacity Planning For (Days)' in the {2}."
+                    ).format(
+                        plan_days,
+                        local_row.operation,
+                        get_link_to_form("Manufacturing Settings", "Manufacturing Settings"),
+                    ),
+                    CapacityError,
+                )
+
+            local_row.db_update()
+            
