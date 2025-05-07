@@ -114,8 +114,6 @@ from frappe.model.document import Document
 from frappe.utils import cint
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERPNextWorkOrder
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
-from datetime import timedelta
-from frappe.utils import get_datetime, now_datetime, flt
 
 class WorkOrder(ERPNextWorkOrder):
     def create_job_card(self):
@@ -153,50 +151,10 @@ class WorkOrder(ERPNextWorkOrder):
                         temp_qty = split_qty_based_on_batch_size(self, row, temp_qty)
                         if row.job_card_qty > 0:
                             row.job_card_qty = batch.batch_qty
-                            #Try to calculate a correct jobcard timelog 
-                            # Create the Job Card doc manually to inject accurate timings
-                            job_card = frappe.new_doc("Job Card")
-                            job_card.work_order = self.name
-                            job_card.operation = row.operation
-                            job_card.for_quantity = batch.batch_qty
-                            #job_card.workstation = row.workstation
-                            for row in self.operations:
-                                if not row.workstation:
-                                    row.workstation = frappe.get_value("Workstation", {"workstation_type": row.workstation_type}, "name")
-
-                            # Compute timings
-                            start_time, end_time = self.compute_planned_start_end_time(row, batch.batch_qty, plan_days
-)
-                            job_card.planned_start_time = start_time
-                            job_card.planned_end_time = end_time
-
-                            job_card.save()
-                            #end calculate correct jobcard timelog - comment out prepare_data_for_job_card
-                            #self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
+                            self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
 
             batch.status = "Created"
 
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
-
-    def compute_planned_start_end_time(self, operation, qty_to_make, plan_days=None):
-        # Default start time
-        planned_start = get_datetime(self.planned_start_date) if self.planned_start_date else now_datetime()
-
-        # Calculate operation time in minutes scaled to batch quantity
-        time_in_mins = flt(operation.time_in_mins) * flt(qty_to_make) / flt(self.qty)
-
-        # Compute timedelta
-        delta = timedelta(minutes=time_in_mins)
-
-        # Compute start and end
-        start = planned_start
-        end = start + delta
-
-        # Optional planning offset
-        if plan_days:
-            start += timedelta(days=plan_days)
-            end += timedelta(days=plan_days)
-
-        return start, end
