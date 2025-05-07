@@ -185,7 +185,7 @@ class WorkOrder(ERPNextWorkOrder):
 
         # Create job card with adjusted time
         job_card_doc = self.create_job_card(
-            self, local_row, auto_create=True, enable_capacity_planning=enable_capacity_planning
+                local_row, auto_create=True, enable_capacity_planning=enable_capacity_planning
         )
 
         # Update planning info if enabled
