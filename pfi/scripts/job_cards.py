@@ -186,7 +186,7 @@ class WorkOrder(ERPNextWorkOrder):
         
         # Group rows by sequence_id
         operations_by_sequence = defaultdict(list)
-        for idx, row in enumerate(rows):  # assuming `rows` is the list of local_rows for the current batch
+        for row in local_operations:  # assuming local_operations is built earlier from bom_operations
             operations_by_sequence[row.sequence_id].append(row)
                 
         
