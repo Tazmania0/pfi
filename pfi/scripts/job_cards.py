@@ -172,10 +172,10 @@ class WorkOrder(ERPNextWorkOrder):
         local_row = deepcopy(row)
 
         # Adjust time proportionally to the job_card_qty (which reflects batch qty)
-        if flt(self.qty):
+        if float(self.qty):
             local_row.time_in_mins = max(
                 1,
-                flt(row.time_in_mins) * flt(row.job_card_qty) / flt(self.qty)
+                float(row.time_in_mins) * float(row.job_card_qty) / float(self.qty)
             )
         else:
             local_row.time_in_mins = row.time_in_mins
