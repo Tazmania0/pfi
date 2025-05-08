@@ -236,6 +236,7 @@ class WorkOrder(ERPNextWorkOrder):
 
     def set_batchwise_operation_times(self, idx, row):
         from datetime import datetime, timedelta
+        from frappe.utils import get_datetime
         
         
         if not hasattr(self, "sequence_max_end_time"):
