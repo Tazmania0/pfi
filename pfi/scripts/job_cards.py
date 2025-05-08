@@ -148,7 +148,9 @@ class WorkOrder(ERPNextWorkOrder):
         for batch in self.batch_allocations:
             if batch.status != "Pending":
                 continue
-
+        
+        batch_id = batch.name
+        
             for index, row in enumerate(self.operations):
                 if batch.batch_qty > 0:
                     temp_qty = batch.batch_qty
@@ -199,7 +201,8 @@ class WorkOrder(ERPNextWorkOrder):
         #self.set_operation_start_end_time(index, local_row)
         
         # Apply batchwise timing logic
-        self.set_batchwise_operation_times(index, local_row)
+        #self.set_batchwise_operation_times(index, local_row)
+        self.set_batchwise_operation_times(index, local_row,batch_id)
         
         
         
@@ -231,33 +234,33 @@ class WorkOrder(ERPNextWorkOrder):
             
 
 
-    def set_batchwise_operation_times(self, index, row, batch_id):
-        from frappe.utils import add_to_date
+    def set_batchwise_operation_times(self, row, index, batch_id):
+        sequence_id = row.get("sequence_id")
+        if not sequence_id:
+            return
 
-        sequence_id = row.get("operation_sequence")
-        key = (batch_id, sequence_id - 1)  # depends on prev sequence
+        operation_duration = row.get("time_in_mins", 0)
+        if not operation_duration:
+            return
 
-        # Get start time: if not first sequence, wait for previous to finish
-        if sequence_id > 1:
-            prev_end = self.sequence_latest_end_by_batch.get(key)
-            start_time = max(row.get("planned_start_time") or self.planned_start_date, prev_end)
-        else:
-            start_time = row.get("planned_start_time") or self.planned_start_date
+        duration = timedelta(minutes=operation_duration)
 
-        # Duration = operation_time * quantity
-        operation_duration_in_minutes = flt(row.time_in_mins) * flt(row.job_card_qty)
-        end_time = add_to_date(start_time, minutes=operation_duration_in_minutes)
+        previous_sequence_key = (batch_id, sequence_id - 1)
+        previous_end_time = self.sequence_latest_end_by_batch.get(previous_sequence_key)
 
-        if start_time == end_time:
+        if not row.planned_start_time:
+            row.planned_start_time = get_datetime(self.planned_start_date)
+
+        if previous_end_time and previous_end_time > row.planned_start_time:
+            row.planned_start_time = previous_end_time
+
+        row.planned_end_time = row.planned_start_time + duration
+
+        if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Planned start time cannot be the same as end time"))
 
-        row.planned_start_time = start_time
-        row.planned_end_time = end_time
+        self.sequence_latest_end_by_batch[(batch_id, sequence_id)] = row.planned_end_time
 
-        # Update latest end time for this batch+sequence
-        self.sequence_latest_end_by_batch[(batch_id, sequence_id)] = max(
-            self.sequence_latest_end_by_batch.get((batch_id, sequence_id), end_time), end_time
-        )
 
 
 
