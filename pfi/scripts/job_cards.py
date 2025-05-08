@@ -140,6 +140,9 @@ class WorkOrder(ERPNextWorkOrder):
             self.db_set("planned_end_date", planned_end_date)
 
     def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
+        # Sort operations by sequence for batchwise planning
+        self.operations.sort(key=lambda x: x.sequence_id or 0)
+        
         for batch in self.batch_allocations:
             if batch.status != "Pending":
                 continue
@@ -168,7 +171,7 @@ class WorkOrder(ERPNextWorkOrder):
         from copy import deepcopy
         from frappe.utils import date_diff
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
-        from collections import defaultdict
+        #from collections import defaultdict
         
         #from frappe.utils.data import flt
         
@@ -185,16 +188,16 @@ class WorkOrder(ERPNextWorkOrder):
             local_row.time_in_mins = row.time_in_mins
         
         # Group rows by sequence_id
-        operations_by_sequence = defaultdict(list)
-        for row in local_row:  # assuming local_operations is built earlier from bom_operations
-            operations_by_sequence[row.sequence_id].append(row)
+        #operations_by_sequence = defaultdict(list)
+        #for row in local_row:  # assuming local_operations is built earlier from bom_operations
+        #    operations_by_sequence[row.sequence_id].append(row)
                 
         
         # Use same logic as ERPNext to calculate time range
         #self.set_operation_start_end_time(index, local_row)
         
         # Apply batchwise timing logic
-        self.set_batchwise_operation_times(operations_by_sequence)
+        self.set_batchwise_operation_times(index, local_row)
         
         
         
@@ -226,35 +229,36 @@ class WorkOrder(ERPNextWorkOrder):
             
 
 
-        def set_batchwise_operation_times(self, operations_by_sequence):
+        def set_batchwise_operation_times(self, idx, row):
             """
-            Set operation times for each batch assuming best-case parallel processing within a sequence.
-            Each sequence group starts after all operations from the previous sequence are finished.
-            This function assumes operations in a sequence can be done in parallel if resources allow it.
+            Set start and end times assuming best-case parallel execution within the same sequence,
+            and sequential progression between sequence levels.
             """
-            from dateutil.relativedelta import relativedelta
             from frappe.utils import get_datetime
-            import frappe
+            from dateutil.relativedelta import relativedelta
+            from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
 
-            current_start = get_datetime(self.planned_start_date)
+            current_sequence = row.sequence_id
+            previous_sequence_end = None
 
-            for sequence_id in sorted(operations_by_sequence):
-                rows = operations_by_sequence[sequence_id]
+            # Walk backward to find the latest end time of previous sequence
+            for prior_row in self.operations[:idx][::-1]:
+                if prior_row.sequence_id < current_sequence:
+                    prior_end = get_datetime(prior_row.planned_end_time)
+                    if not previous_sequence_end or prior_end > previous_sequence_end:
+                        previous_sequence_end = prior_end
 
-                # Best-case: max duration among rows
-                max_duration = max(row.time_in_mins for row in rows)
-                sequence_duration = relativedelta(minutes=max_duration)
+            if not previous_sequence_end:
+                # If this is the first sequence, use planned_start_date
+                row.planned_start_time = get_datetime(self.planned_start_date)
+            else:
+                row.planned_start_time = previous_sequence_end + get_mins_between_operations()
 
-                for row in rows:
-                    # Simulate as if each operation was the first one
-                    row.planned_start_time = current_start
-                    row.planned_end_time = current_start + relativedelta(minutes=row.time_in_mins)
+            row.planned_end_time = row.planned_start_time + relativedelta(minutes=row.time_in_mins)
 
-                    if row.planned_start_time == row.planned_end_time:
-                        frappe.throw(_("Planned start time cannot be the same as end time"))
+            if row.planned_start_time == row.planned_end_time:
+                frappe.throw(_("Planned start time cannot be the same as end time"))
 
-                # Advance current start by max duration (best-case parallelism)
-                current_start += sequence_duration
 
 
         def set_operation_start_end_time(self, idx, row):
