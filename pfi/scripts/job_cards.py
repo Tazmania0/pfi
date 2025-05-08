@@ -63,6 +63,25 @@ def validate_batch_allocations(work_order, method=None):
             f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction ({allowed_qty})."
         )
 
+        
+        
+#@frappe.whitelist()
+#def create_job_cards_from_splits(work_order_name):
+#    work_order = frappe.get_doc("Work Order", work_order_name)
+#    frappe.msgprint("Calling Validate batch allocations..")
+#    validate_batch_allocations(work_order)
+#    for row in work_order.batch_allocations:
+#        if row.status != "Pending":
+#            continue
+#        job_card = frappe.new_doc("Job Card")
+#        job_card.work_order = work_order.name
+#        job_card.for_quantity = row.batch_qty
+#        job_card.operation = work_order.operations[0].operation  # Customize if multiple ops
+#        job_card.save()
+#        row.status = "Created"
+#    work_order.save()
+#    return "Job Cards Created"
+
 
 # Validate wrapper to be called from hooks
 
@@ -123,15 +142,12 @@ class WorkOrder(ERPNextWorkOrder):
     def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
         # Sort operations by sequence for batchwise planning
         self.operations.sort(key=lambda x: x.sequence_id or 0)
-        #self.sequence_max_end_time = {}
-        self.sequence_latest_end_by_batch = {}  # (batch_id, sequence_id) -> latest end time
+        self.sequence_max_end_time = {}
         
         for batch in self.batch_allocations:
             if batch.status != "Pending":
                 continue
-        
-            batch_id = batch.name
-        
+
             for index, row in enumerate(self.operations):
                 if batch.batch_qty > 0:
                     temp_qty = batch.batch_qty
@@ -140,7 +156,7 @@ class WorkOrder(ERPNextWorkOrder):
                         if row.job_card_qty > 0:
                             row.job_card_qty = batch.batch_qty
                             #self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
-                            self.prepare_data_for_job_card_batchwise(row, index, plan_days, enable_capacity_planning,batch_id)
+                            self.prepare_data_for_job_card_batchwise(row, index, plan_days, enable_capacity_planning)
 
             batch.status = "Created"
 
@@ -152,7 +168,7 @@ class WorkOrder(ERPNextWorkOrder):
     
     
     #Time calcaulation fix 
-    def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning, batch_id = None):
+    def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
         from copy import deepcopy
         from frappe.utils import date_diff
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
@@ -182,8 +198,7 @@ class WorkOrder(ERPNextWorkOrder):
         #self.set_operation_start_end_time(index, local_row)
         
         # Apply batchwise timing logic
-        #self.set_batchwise_operation_times(index, local_row)
-        self.set_batchwise_operation_times(index, local_row,batch_id)
+        self.set_batchwise_operation_times(index, local_row)
         
         
         
@@ -215,34 +230,34 @@ class WorkOrder(ERPNextWorkOrder):
             
 
 
-    def set_batchwise_operation_times(self, row, index, batch_id):
-        # Use getattr to safely get attributes from Frappe row object
-        sequence_id =  getattr(row, "sequence_id", None)
-        if not sequence_id:
-            return
+    def set_batchwise_operation_times(self, idx, row):
+        from frappe.utils import get_datetime
+        from dateutil.relativedelta import relativedelta
+        from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
 
-        operation_duration = getattr(row, "time_in_mins", 0) or 0
-        if not operation_duration:
-            return
+        # Determine start based on previous sequence max end time
+        prev_end = self.sequence_max_end_time.get(row.sequence_id - 1)
 
-        duration = timedelta(minutes=operation_duration)
-
-        previous_sequence_key = (batch_id, sequence_id - 1)
-        previous_end_time = self.sequence_latest_end_by_batch.get(previous_sequence_key)
-
-        if not row.planned_start_time:
+        if prev_end:
+            row.planned_start_time = prev_end + get_mins_between_operations()
+        else:
             row.planned_start_time = get_datetime(self.planned_start_date)
 
-        if previous_end_time and previous_end_time > row.planned_start_time:
-            row.planned_start_time = previous_end_time
+        # FIX: Multiply by quantity to manufacture
+        total_duration = row.time_in_mins * row.job_card_qty
+        row.planned_end_time = row.planned_start_time + relativedelta(minutes=total_duration)
 
-        row.planned_end_time = row.planned_start_time + duration
-
+        # Validation
         if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Planned start time cannot be the same as end time"))
 
-        self.sequence_latest_end_by_batch[(batch_id, sequence_id)] = row.planned_end_time
+        # Track max end time for current sequence
+        curr_seq = row.sequence_id
+        curr_end = row.planned_end_time
+        max_existing = self.sequence_max_end_time.get(curr_seq)
 
+        if not max_existing or curr_end > max_existing:
+            self.sequence_max_end_time[curr_seq] = curr_end
 
 
 
