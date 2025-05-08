@@ -258,8 +258,10 @@ class WorkOrder(ERPNextWorkOrder):
 
         sequence_times = self.sequence_max_end_time[self.virtual_batch_id]
 
-        # Base planned start
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
+
+        # This assumes you're already tracking max end times per virtual_batch_id and sequence_id
+        prev_sequence_end = self.sequence_max_end_time.get((self.virtual_batch_id, row.sequence_id - 1), planned_start_floor)
         base_start = max(prev_sequence_end, planned_start_floor)
         
         # Determine the earliest allowed start time based on prior sequence
