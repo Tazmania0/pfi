@@ -217,7 +217,7 @@ class WorkOrder(ERPNextWorkOrder):
 
     def set_batchwise_operation_times(self, row, index, batch_id):
         # Use getattr to safely get attributes from Frappe row object
-        sequence_id = getattr(row, "sequence_id", None)
+        sequence_id =  getattr(row, "sequence_id", None)
         if not sequence_id:
             return
 
