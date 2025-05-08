@@ -142,6 +142,7 @@ class WorkOrder(ERPNextWorkOrder):
     def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
         # Sort operations by sequence for batchwise planning
         self.operations.sort(key=lambda x: x.sequence_id or 0)
+        self.sequence_max_end_time = {}
         
         for batch in self.batch_allocations:
             if batch.status != "Pending":
@@ -230,32 +231,31 @@ class WorkOrder(ERPNextWorkOrder):
 
 
     def set_batchwise_operation_times(self, idx, row):
-        """
-        Set start and end times assuming best-case parallel execution within the same sequence,
-        and sequential progression between sequence levels.
-        """
         from frappe.utils import get_datetime
         from dateutil.relativedelta import relativedelta
         from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
 
-        current_sequence = row.sequence_id
-        latest_prev_sequence_end = None
+        # Determine start based on previous sequence max end time
+        prev_end = self.sequence_max_end_time.get(row.sequence_id - 1)
 
-        for prior in self.operations:
-            if prior.sequence_id < current_sequence and prior.planned_end_time:
-                end_time = get_datetime(prior.planned_end_time)
-                if not latest_prev_sequence_end or end_time > latest_prev_sequence_end:
-                    latest_prev_sequence_end = end_time
-
-        if not latest_prev_sequence_end:
-            row.planned_start_time = get_datetime(self.planned_start_date)
+        if prev_end:
+            row.planned_start_time = prev_end + get_mins_between_operations()
         else:
-            row.planned_start_time = latest_prev_sequence_end + get_mins_between_operations()
+            row.planned_start_time = get_datetime(self.planned_start_date)
 
         row.planned_end_time = row.planned_start_time + relativedelta(minutes=row.time_in_mins)
 
+        # Validation
         if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Planned start time cannot be the same as end time"))
+
+        # Update current sequence max end time if this row ends later
+        curr_seq = row.sequence_id
+        curr_end = row.planned_end_time
+        max_existing = self.sequence_max_end_time.get(curr_seq)
+
+        if not max_existing or curr_end > max_existing:
+            self.sequence_max_end_time[curr_seq] = curr_end
 
 
 
