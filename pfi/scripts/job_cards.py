@@ -236,33 +236,44 @@ class WorkOrder(ERPNextWorkOrder):
         from dateutil.relativedelta import relativedelta
         from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
 
-        # Ensure sequence_max_end_time is initialized
         if not hasattr(self, "sequence_max_end_time"):
             self.sequence_max_end_time = {}
+        if not hasattr(self, "last_sequence_id"):
+            self.last_sequence_id = None
 
-        # Get previous sequence's max end time
-        prev_seq_id = row.sequence_id - 1
-        prev_end = self.sequence_max_end_time.get(prev_seq_id)
+        # Detect sequence change
+        is_sequence_change = row.sequence_id != self.last_sequence_id
 
-        if prev_end:
-            row.planned_start_time = prev_end + get_mins_between_operations()
+        # If this is a new sequence, use max end of previous sequence
+        if is_sequence_change:
+            prev_seq = row.sequence_id - 1
+            prev_seq_end = self.sequence_max_end_time.get(prev_seq)
+            if prev_seq_end:
+                row.planned_start_time = prev_seq_end + get_mins_between_operations()
+            else:
+                row.planned_start_time = get_datetime(self.planned_start_date)
         else:
-            row.planned_start_time = get_datetime(self.planned_start_date)
+            # Same sequence — respect end of previous operation on same workstation
+            last_end = self.sequence_max_end_time.get(row.sequence_id)
+            row.planned_start_time = last_end or get_datetime(self.planned_start_date)
 
-        # Duration depends on quantity
+        # Duration
         total_duration = row.time_in_mins * row.job_card_qty
         row.planned_end_time = row.planned_start_time + relativedelta(minutes=total_duration)
 
         if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Planned start time cannot be the same as end time"))
 
-        # Update current sequence's max end time
-        curr_seq = row.sequence_id
-        curr_end = row.planned_end_time
-        existing_max = self.sequence_max_end_time.get(curr_seq)
+        # Update this sequence's end time
+        if (
+            row.sequence_id not in self.sequence_max_end_time
+            or row.planned_end_time > self.sequence_max_end_time[row.sequence_id]
+        ):
+            self.sequence_max_end_time[row.sequence_id] = row.planned_end_time
 
-        if not existing_max or curr_end > existing_max:
-            self.sequence_max_end_time[curr_seq] = curr_end
+        # Update tracker
+        self.last_sequence_id = row.sequence_id
+
 
 
 
