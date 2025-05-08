@@ -63,25 +63,6 @@ def validate_batch_allocations(work_order, method=None):
             f"Total batch allocation ({total_batch_qty}) exceeds allowed quantity to manufacture including overproduction ({allowed_qty})."
         )
 
-        
-        
-#@frappe.whitelist()
-#def create_job_cards_from_splits(work_order_name):
-#    work_order = frappe.get_doc("Work Order", work_order_name)
-#    frappe.msgprint("Calling Validate batch allocations..")
-#    validate_batch_allocations(work_order)
-#    for row in work_order.batch_allocations:
-#        if row.status != "Pending":
-#            continue
-#        job_card = frappe.new_doc("Job Card")
-#        job_card.work_order = work_order.name
-#        job_card.for_quantity = row.batch_qty
-#        job_card.operation = work_order.operations[0].operation  # Customize if multiple ops
-#        job_card.save()
-#        row.status = "Created"
-#    work_order.save()
-#    return "Job Cards Created"
-
 
 # Validate wrapper to be called from hooks
 
@@ -159,7 +140,7 @@ class WorkOrder(ERPNextWorkOrder):
                         if row.job_card_qty > 0:
                             row.job_card_qty = batch.batch_qty
                             #self.prepare_data_for_job_card(row, index, plan_days, enable_capacity_planning)
-                            self.prepare_data_for_job_card_batchwise(row, index, plan_days, enable_capacity_planning)
+                            self.prepare_data_for_job_card_batchwise(row, index, plan_days, enable_capacity_planning,batch_id)
 
             batch.status = "Created"
 
@@ -171,7 +152,7 @@ class WorkOrder(ERPNextWorkOrder):
     
     
     #Time calcaulation fix 
-    def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
+    def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning, batch_id = None):
         from copy import deepcopy
         from frappe.utils import date_diff
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
