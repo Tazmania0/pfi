@@ -197,7 +197,7 @@ class WorkOrder(ERPNextWorkOrder):
         #self.set_operation_start_end_time(index, local_row)
         
         # Apply batchwise timing logic
-        set_batchwise_operation_times(index, local_row)
+        self.set_batchwise_operation_times(index, local_row)
         
         
         
@@ -227,7 +227,6 @@ class WorkOrder(ERPNextWorkOrder):
 
             local_row.db_update()
             
-
 
         def set_batchwise_operation_times(self, idx, row):
             """
