@@ -232,10 +232,12 @@ class WorkOrder(ERPNextWorkOrder):
             
 
 
-    def set_batchwise_operation_times(self, idx, row):
-        from datetime import timedelta
 
-        # Initialize tracking structures if not present
+
+    def set_batchwise_operation_times(self, idx, row):
+        from datetime import datetime, timedelta
+        
+        
         if not hasattr(self, "sequence_max_end_time"):
             self.sequence_max_end_time = {}
             self.virtual_batch_id = 0
@@ -250,34 +252,35 @@ class WorkOrder(ERPNextWorkOrder):
 
         self.last_sequence_id = sequence_id
 
-        # Initialize sequence tracking for current virtual batch if needed
         if self.virtual_batch_id not in self.sequence_max_end_time:
             self.sequence_max_end_time[self.virtual_batch_id] = {}
 
         sequence_times = self.sequence_max_end_time[self.virtual_batch_id]
 
-        # Determine earliest allowed start time based on prior sequence
+        # Base planned start
+        base_start = row.planned_start_time or row.expected_start_date or datetime.now()
+
+        # Determine the earliest allowed start time based on prior sequence
         if sequence_id > 1:
             prev_sequence_end = sequence_times.get(sequence_id - 1)
             if prev_sequence_end:
-                start_time = max(row.planned_start_time, prev_sequence_end)
+                start_time = max(base_start, prev_sequence_end)
             else:
-                start_time = row.planned_start_time  # fallback
+                start_time = base_start  # fallback
         else:
-            start_time = row.planned_start_time
+            start_time = base_start
 
         # Compute end time
         end_time = start_time + operation_duration
 
-        # Save start/end into row (or job card data structure)
+        # Save
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
-        # Update sequence_max_end_time with latest end time for this sequence
+        # Track latest end time for this sequence
         current_latest = sequence_times.get(sequence_id)
         if not current_latest or end_time > current_latest:
             sequence_times[sequence_id] = end_time
-
 
 
 
