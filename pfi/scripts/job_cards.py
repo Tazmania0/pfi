@@ -239,20 +239,18 @@ class WorkOrder(ERPNextWorkOrder):
         from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
 
         current_sequence = row.sequence_id
-        previous_sequence_end = None
+        latest_prev_sequence_end = None
 
-        # Walk backward to find the latest end time of previous sequence
-        for prior_row in self.operations[:idx][::-1]:
-            if prior_row.sequence_id < current_sequence:
-                prior_end = get_datetime(prior_row.planned_end_time)
-                if not previous_sequence_end or prior_end > previous_sequence_end:
-                    previous_sequence_end = prior_end
+        for prior in self.operations:
+            if prior.sequence_id < current_sequence and prior.planned_end_time:
+                end_time = get_datetime(prior.planned_end_time)
+                if not latest_prev_sequence_end or end_time > latest_prev_sequence_end:
+                    latest_prev_sequence_end = end_time
 
-        if not previous_sequence_end:
-            # If this is the first sequence, use planned_start_date
+        if not latest_prev_sequence_end:
             row.planned_start_time = get_datetime(self.planned_start_date)
         else:
-            row.planned_start_time = previous_sequence_end + get_mins_between_operations()
+            row.planned_start_time = latest_prev_sequence_end + get_mins_between_operations()
 
         row.planned_end_time = row.planned_start_time + relativedelta(minutes=row.time_in_mins)
 
