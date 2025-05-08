@@ -143,6 +143,7 @@ class WorkOrder(ERPNextWorkOrder):
         # Sort operations by sequence for batchwise planning
         self.operations.sort(key=lambda x: x.sequence_id or 0)
         self.sequence_max_end_time = {}
+        self.last_sequence_id = None
         
         for batch in self.batch_allocations:
             if batch.status != "Pending":
@@ -235,29 +236,45 @@ class WorkOrder(ERPNextWorkOrder):
         from dateutil.relativedelta import relativedelta
         from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
 
-        # Determine start based on previous sequence max end time
-        prev_end = self.sequence_max_end_time.get(row.sequence_id - 1)
+        # Initialize on first run
+        if not hasattr(self, "sequence_max_end_time"):
+            self.sequence_max_end_time = {}
 
-        if prev_end:
-            row.planned_start_time = prev_end + get_mins_between_operations()
+        if not hasattr(self, "last_sequence_id"):
+            self.last_sequence_id = None
+
+        curr_seq = row.sequence_id
+        prev_seq = self.last_sequence_id
+
+        # Detect if new batch (sequence reset)
+        if prev_seq is None or curr_seq <= prev_seq:
+            # First operation of a batch
+            prev_end = self.sequence_max_end_time.get(curr_seq - 1)
+            if prev_end:
+                row.planned_start_time = prev_end + get_mins_between_operations()
+            else:
+                row.planned_start_time = get_datetime(self.planned_start_date)
         else:
-            row.planned_start_time = get_datetime(self.planned_start_date)
+            # Continuing in the same batch
+            prev_end = self.sequence_max_end_time.get(curr_seq)
+            row.planned_start_time = (prev_end or get_datetime(self.planned_start_date)) + get_mins_between_operations()
 
-        # FIX: Multiply by quantity to manufacture
+        # Compute total duration
         total_duration = row.time_in_mins * row.job_card_qty
         row.planned_end_time = row.planned_start_time + relativedelta(minutes=total_duration)
 
-        # Validation
         if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Planned start time cannot be the same as end time"))
 
-        # Track max end time for current sequence
-        curr_seq = row.sequence_id
+        # Update max end time for this sequence
         curr_end = row.planned_end_time
         max_existing = self.sequence_max_end_time.get(curr_seq)
 
         if not max_existing or curr_end > max_existing:
             self.sequence_max_end_time[curr_seq] = curr_end
+
+        # Update last sequence ID
+        self.last_sequence_id = curr_seq
 
 
 
