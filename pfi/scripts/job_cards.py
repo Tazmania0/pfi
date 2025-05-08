@@ -130,7 +130,7 @@ class WorkOrder(ERPNextWorkOrder):
             if batch.status != "Pending":
                 continue
         
-        batch_id = batch.name
+            batch_id = batch.name
         
             for index, row in enumerate(self.operations):
                 if batch.batch_qty > 0:
