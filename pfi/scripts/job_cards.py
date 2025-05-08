@@ -243,13 +243,15 @@ class WorkOrder(ERPNextWorkOrder):
         else:
             row.planned_start_time = get_datetime(self.planned_start_date)
 
-        row.planned_end_time = row.planned_start_time + relativedelta(minutes=row.time_in_mins)
+        # FIX: Multiply by quantity to manufacture
+        total_duration = row.time_in_mins * row.job_card_qty
+        row.planned_end_time = row.planned_start_time + relativedelta(minutes=total_duration)
 
         # Validation
         if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Planned start time cannot be the same as end time"))
 
-        # Update current sequence max end time if this row ends later
+        # Track max end time for current sequence
         curr_seq = row.sequence_id
         curr_end = row.planned_end_time
         max_existing = self.sequence_max_end_time.get(curr_seq)
