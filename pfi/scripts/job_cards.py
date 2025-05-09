@@ -186,10 +186,10 @@ class WorkOrder(ERPNextWorkOrder):
                 
         
         # Use same logic as ERPNext to calculate time range
-        #self.set_operation_start_end_time(index, local_row)
+        self.set_operation_start_end_time(index, local_row)
         
         # Apply batchwise timing logic
-        self.set_batchwise_operation_times(index, local_row)
+        #self.set_batchwise_operation_times(index, local_row)
         
         
         
@@ -303,25 +303,3 @@ class WorkOrder(ERPNextWorkOrder):
 
         frappe.db.commit()
 
-    def set_operation_start_end_time(self, idx, row):
-        """
-        Override standard operation timing logic.
-        If this is called directly (not in batchwise mode), fall back to original logic.
-        """
-        from frappe.utils import get_datetime
-        from dateutil.relativedelta import relativedelta
-        from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
-
-        if idx == 0:
-            row.planned_start_time = self.planned_start_date
-        else:
-            # Fall back to sequential assumption
-            row.planned_start_time = (
-                get_datetime(self.operations[idx - 1].planned_end_time)
-                + get_mins_between_operations()
-            )
-
-        row.planned_end_time = get_datetime(row.planned_start_time) + relativedelta(minutes=row.time_in_mins)
-
-        if row.planned_start_time == row.planned_end_time:
-            frappe.throw(_("Capacity Planning Error, planned start time can not be same as end time"))
