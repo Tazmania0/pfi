@@ -232,22 +232,24 @@ class WorkOrder(ERPNextWorkOrder):
                 "last_sequence_id": None,
                 "last_qty": None,
                 "rows_in_current_batch": 0,
-                "batch_max_end_by_sequence": {},  # (batch_id, sequence_id): datetime
-                "sequence_max_end_per_batch": {},  # batch_id: {sequence_id: datetime}
+                "batch_max_end_by_sequence": {},     # (batch_id, sequence_id): datetime
+                "sequence_max_end_per_batch": {},    # batch_id: {sequence_id: datetime}
             }
 
         ctx = self.batch_context
         sequence_id = row.sequence_id
-        qty = row.job_card_qty 
+        qty = row.job_card_qty
         duration = timedelta(minutes=row.time_in_mins or 0)
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
 
-        # Detect new virtual batch by checking for the first row, or sequence reset, or quantity change
-        if (
-            ctx["last_sequence_id"] is None
-            or (ctx["last_sequence_id"] > sequence_id)
-            or (ctx["last_qty"] is not None and ctx["last_qty"] != qty)
-        ):
+        # Detect new virtual batch
+        is_new_batch = (
+            ctx["last_sequence_id"] is None or
+            ctx["last_sequence_id"] > sequence_id or
+            (ctx["last_qty"] is not None and ctx["last_qty"] != qty)
+        )
+
+        if is_new_batch:
             ctx["virtual_batch_id"] += 1
             ctx["rows_in_current_batch"] = 0
 
@@ -258,31 +260,45 @@ class WorkOrder(ERPNextWorkOrder):
         if batch_id not in ctx["sequence_max_end_per_batch"]:
             ctx["sequence_max_end_per_batch"][batch_id] = {}
 
+        # Get previous sequence end time in the same batch
         prev_seq_end_same_batch = ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id - 1)
-        same_seq_prev_batch_end = ctx["batch_max_end_by_sequence"].get((batch_id - 1, sequence_id))
 
-        # Start time rules
+        # Get same-sequence end time from previous batch
+        same_seq_end_prev_batch = ctx["batch_max_end_by_sequence"].get((batch_id - 1, sequence_id))
+
+        # Determine start time
         start_time = planned_start_floor
         if sequence_id == 1:
-            # Wait for previous batch's same sequence to finish
-            if same_seq_prev_batch_end:
-                start_time = max(start_time, same_seq_prev_batch_end)
+            # For sequence 1, wait for same sequence to finish in previous batch
+            if same_seq_end_prev_batch:
+                start_time = max(start_time, same_seq_end_prev_batch)
         else:
+            # For other sequences, wait for:
+            # - end of previous sequence in this batch
+            # - end of same sequence in previous batch
+            options = [start_time]
             if prev_seq_end_same_batch:
-                start_time = max(start_time, prev_seq_end_same_batch)
+                options.append(prev_seq_end_same_batch)
+            if same_seq_end_prev_batch:
+                options.append(same_seq_end_prev_batch)
+            start_time = max(options)
 
         end_time = start_time + duration
 
-        # Assign times
+        # Assign calculated times
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
         # Update context
+        # Max end per sequence per batch
         ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = max(
             ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min),
             end_time
         )
-        ctx["batch_max_end_by_sequence"][(batch_id, sequence_id)] = ctx["sequence_max_end_per_batch"][batch_id][sequence_id]
+
+        # Absolute end time of that sequence in that batch
+        ctx["batch_max_end_by_sequence"][(batch_id, sequence_id)] = \
+            ctx["sequence_max_end_per_batch"][batch_id][sequence_id]
 
 
     def set_operation_start_end_time(self, idx, row):
