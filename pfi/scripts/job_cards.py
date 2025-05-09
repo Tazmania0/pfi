@@ -126,10 +126,11 @@ class WorkOrder(ERPNextWorkOrder):
         self.operations.sort(key=lambda x: x.sequence_id or 0)
         self.batch_context = {
                 "current_batch": 0,
-                "current_sequence": 0,
+                "current_sequence": None,
                 "batch_sequence_start": {},       # (batch, sequence): start_time
-                "sequence_max_end_per_batch": {}, # {batch: {sequence: end_time}}
-                "global_sequence_end": {},        # {sequence: max_end_time}
+                "sequence_max_end_per_batch": {},  # {batch: {sequence: end_time}}
+                "global_sequence_end": {},         # {sequence: max_end_time}
+                "last_qty": None,
             }
         
         for batch in self.batch_allocations:
@@ -228,69 +229,77 @@ class WorkOrder(ERPNextWorkOrder):
         if not hasattr(self, "batch_context"):
             self.batch_context = {
                 "current_batch": 0,
-                "current_sequence": 0,
+                "current_sequence": None,
                 "batch_sequence_start": {},       # (batch, sequence): start_time
-                "sequence_max_end_per_batch": {}, # {batch: {sequence: end_time}}
-                "global_sequence_end": {},        # {sequence: max_end_time}
+                "sequence_max_end_per_batch": {},  # {batch: {sequence: end_time}}
+                "global_sequence_end": {},         # {sequence: max_end_time}
+                "last_qty": None,
             }
 
         ctx = self.batch_context
         sequence_id = row.sequence_id
         qty = row.job_card_qty
         time_per_unit = row.time_in_mins or 0
-        total_duration = time_per_unit * qty  # Total time for this job
+        total_duration = time_per_unit * qty
         duration = timedelta(minutes=total_duration)
 
-        # Work Order's planned start time
-        planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
+        # Use Work Order's start time explicitly (no fallback to `datetime.now()`)
+        planned_start_floor = get_datetime(self.planned_start_date)  # Assumes `self` is the Work Order
 
-        # Detect batch changes (based on qty or sequence reset)
+        # Detect new batch when sequence resets or qty changes
         is_new_batch = (
-            ctx["current_batch"] is None or
+            ctx["current_sequence"] is None or
             ctx["current_sequence"] > sequence_id or
-            (ctx.get("last_qty", None) != qty)
+            ctx["last_qty"] != qty
         )
+
         if is_new_batch:
-            ctx["current_batch"] = ctx.get("current_batch", 0) + 1
+            ctx["current_batch"] += 1
             ctx["current_sequence"] = sequence_id
             ctx["last_qty"] = qty
 
         batch_id = ctx["current_batch"]
         ctx["current_sequence"] = sequence_id
 
-        # Group key for tracking batch-sequence groups
         group_key = (batch_id, sequence_id)
 
-        # Calculate start time for this group if not already done
         if group_key not in ctx["batch_sequence_start"]:
-            # Dependency 1: Previous sequence in the same batch
+            # Get dependencies for start time
             prev_seq_same_batch = ctx["sequence_max_end_per_batch"].get(batch_id, {}).get(sequence_id - 1, datetime.min)
-            # Dependency 2: Same sequence in previous batches
             same_seq_prev_batch = ctx["global_sequence_end"].get(sequence_id, datetime.min)
-            # Start time is the latest of dependencies or planned start
-            start_time = max(planned_start_floor, prev_seq_same_batch, same_seq_prev_batch)
+            
+            # Start time is the latest of:
+            # - Work Order's planned start time
+            # - Previous sequence in the same batch
+            # - Same sequence in previous batches
+            start_time = max(
+                planned_start_floor,
+                prev_seq_same_batch,
+                same_seq_prev_batch
+            )
             ctx["batch_sequence_start"][group_key] = start_time
         else:
             start_time = ctx["batch_sequence_start"][group_key]
 
-        # Calculate end time for this job
         end_time = start_time + duration
 
         # Update job card
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
-        # Track the maximum end time for this batch and sequence
+        # Track the latest end time for this batch and sequence
         if batch_id not in ctx["sequence_max_end_per_batch"]:
             ctx["sequence_max_end_per_batch"][batch_id] = {}
-        current_max = ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min)
-        if end_time > current_max:
-            ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = end_time
+        ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = max(
+            ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min),
+            end_time
+        )
 
         # Update global tracker for this sequence
-        global_max = ctx["global_sequence_end"].get(sequence_id, datetime.min)
-        if end_time > global_max:
-            ctx["global_sequence_end"][sequence_id] = end_time
+        ctx["global_sequence_end"][sequence_id] = max(
+            ctx["global_sequence_end"].get(sequence_id, datetime.min),
+            end_time
+        )
 
         frappe.db.commit()
 
