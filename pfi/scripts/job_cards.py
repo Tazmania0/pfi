@@ -125,7 +125,7 @@ class WorkOrder(ERPNextWorkOrder):
         # Sort operations by sequence for batchwise planning
         self.operations.sort(key=lambda x: x.sequence_id or 0)
         self.batch_context = {
-                "current_batch": None,
+                "current_batch": 0,
                 "current_sequence": None,
                 "batch_sequence_start": {},       # (batch, sequence): start_time
                 "sequence_max_end_per_batch": {}, # {batch: {sequence: end_time}}
@@ -151,7 +151,9 @@ class WorkOrder(ERPNextWorkOrder):
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
-
+        
+        frappe.db.commit()
+        
 
     
     
@@ -225,7 +227,7 @@ class WorkOrder(ERPNextWorkOrder):
 
         if not hasattr(self, "batch_context"):
             self.batch_context = {
-                "current_batch": None,
+                "current_batch": 0,
                 "current_sequence": None,
                 "batch_sequence_start": {},       # (batch, sequence): start_time
                 "sequence_max_end_per_batch": {}, # {batch: {sequence: end_time}}
