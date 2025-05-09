@@ -231,10 +231,8 @@ class WorkOrder(ERPNextWorkOrder):
                 "virtual_batch_id": 0,
                 "last_sequence_id": None,
                 "last_qty": None,
-                "sequence_max_end_per_batch": {},     # batch_id: {sequence_id: latest end}
-                "batch_max_end_by_sequence": {},      # (batch_id, sequence_id): latest end across all jobs
-                "batch_prev_seq_end": {},             # batch_id: latest end of sequence_id - 1 ops in this batch
-                "last_batch_end_time": datetime.min,  # track most recent job end
+                "sequence_max_end_per_batch": {},  # {batch_id: {sequence_id: latest_end_time}}
+                "last_batch_end_time": datetime.min,
             }
 
         ctx = self.batch_context
@@ -257,38 +255,33 @@ class WorkOrder(ERPNextWorkOrder):
         ctx["last_sequence_id"] = sequence_id
         ctx["last_qty"] = qty
 
-        ctx.setdefault("sequence_max_end_per_batch", {}).setdefault(batch_id, {})
-        ctx.setdefault("batch_prev_seq_end", {}).setdefault(batch_id, datetime.min)
-
-        # Constraints:
-        same_seq_prev_batch_end = ctx["batch_max_end_by_sequence"].get((batch_id - 1, sequence_id), datetime.min)
-        prev_seq_end_same_batch = ctx["batch_prev_seq_end"][batch_id] if sequence_id > 1 else datetime.min
+        # Initialize trackers for the current batch and sequence
+        ctx["sequence_max_end_per_batch"].setdefault(batch_id, {})
+        
+        # Get the latest end time of the previous sequence IN THE SAME BATCH
+        prev_seq_same_batch = ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id - 1, datetime.min)
+        
+        # Get the latest end time of the same sequence IN THE PREVIOUS BATCH
+        prev_batch_same_seq = ctx["sequence_max_end_per_batch"].get(batch_id - 1, {}).get(sequence_id, datetime.min)
 
         # Start time is the latest of:
-        # - planning floor
-        # - end of same-sequence in prev batch
-        # - end of previous-sequence in same batch
-        start_time = max(planned_start_floor, same_seq_prev_batch_end, prev_seq_end_same_batch)
+        # - Planning start time
+        # - Previous sequence in the same batch
+        # - Same sequence in the previous batch
+        start_time = max(planned_start_floor, prev_seq_same_batch, prev_batch_same_seq)
         end_time = start_time + duration
 
-        # Assign
+        # Update the job card
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
-        # Track max end time of this sequence in this batch
-        ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = max(
-            ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min),
-            end_time
-        )
-        ctx["batch_max_end_by_sequence"][(batch_id, sequence_id)] = ctx["sequence_max_end_per_batch"][batch_id][sequence_id]
+        # Track the maximum end time for this sequence in the current batch
+        current_seq_max = ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min)
+        if end_time > current_seq_max:
+            ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = end_time
 
-        # If current sequence is > 1, update the end time for prev sequence in this batch
-        if sequence_id > 1:
-            ctx["batch_prev_seq_end"][batch_id] = max(ctx["batch_prev_seq_end"][batch_id], end_time)
-
-        # Optional: track end time for further logic
+        # Track global end time for reporting
         ctx["last_batch_end_time"] = max(ctx["last_batch_end_time"], end_time)
-
 
 
 
