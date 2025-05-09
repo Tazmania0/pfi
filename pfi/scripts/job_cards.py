@@ -126,7 +126,7 @@ class WorkOrder(ERPNextWorkOrder):
         self.operations.sort(key=lambda x: x.sequence_id or 0)
         self.batch_context = {
                 "current_batch": 0,
-                "current_sequence": None,
+                "current_sequence": 0,
                 "batch_sequence_start": {},       # (batch, sequence): start_time
                 "sequence_max_end_per_batch": {}, # {batch: {sequence: end_time}}
                 "global_sequence_end": {},        # {sequence: max_end_time}
@@ -228,7 +228,7 @@ class WorkOrder(ERPNextWorkOrder):
         if not hasattr(self, "batch_context"):
             self.batch_context = {
                 "current_batch": 0,
-                "current_sequence": None,
+                "current_sequence": 0,
                 "batch_sequence_start": {},       # (batch, sequence): start_time
                 "sequence_max_end_per_batch": {}, # {batch: {sequence: end_time}}
                 "global_sequence_end": {},        # {sequence: max_end_time}
