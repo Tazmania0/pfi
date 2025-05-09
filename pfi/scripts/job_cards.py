@@ -238,7 +238,7 @@ class WorkOrder(ERPNextWorkOrder):
 
         ctx = self.batch_context
         sequence_id = row.sequence_id
-        qty = row.for_quantity
+        qty = row.qty
         duration = timedelta(minutes=row.time_in_mins or 0)
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
 
