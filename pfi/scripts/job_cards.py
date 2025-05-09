@@ -65,24 +65,6 @@ def validate_batch_allocations(work_order, method=None):
 
         
         
-#@frappe.whitelist()
-#def create_job_cards_from_splits(work_order_name):
-#    work_order = frappe.get_doc("Work Order", work_order_name)
-#    frappe.msgprint("Calling Validate batch allocations..")
-#    validate_batch_allocations(work_order)
-#    for row in work_order.batch_allocations:
-#        if row.status != "Pending":
-#            continue
-#        job_card = frappe.new_doc("Job Card")
-#        job_card.work_order = work_order.name
-#        job_card.for_quantity = row.batch_qty
-#        job_card.operation = work_order.operations[0].operation  # Customize if multiple ops
-#        job_card.save()
-#        row.status = "Created"
-#    work_order.save()
-#    return "Job Cards Created"
-
-
 # Validate wrapper to be called from hooks
 
 def validate_job_card(doc, method):
@@ -237,8 +219,7 @@ class WorkOrder(ERPNextWorkOrder):
     def set_batchwise_operation_times(self, idx, row):
         from datetime import datetime, timedelta
         from frappe.utils import get_datetime
-        
-        
+
         if not hasattr(self, "sequence_max_end_time"):
             self.sequence_max_end_time = {}
             self.virtual_batch_id = 0
@@ -247,44 +228,36 @@ class WorkOrder(ERPNextWorkOrder):
         sequence_id = row.sequence_id
         operation_duration = timedelta(minutes=row.time_in_mins or 0)
 
-        # Determine if we need to start a new virtual batch
+        # Virtual batch starts over when sequence_id drops
         if self.last_sequence_id is not None and sequence_id < self.last_sequence_id:
             self.virtual_batch_id += 1
 
         self.last_sequence_id = sequence_id
 
+        # Initialize tracking for this virtual batch if needed
         if self.virtual_batch_id not in self.sequence_max_end_time:
             self.sequence_max_end_time[self.virtual_batch_id] = {}
 
         sequence_times = self.sequence_max_end_time[self.virtual_batch_id]
 
+        # Base planning start time
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
 
-        # This assumes you're already tracking max end times per virtual_batch_id and sequence_id
-        prev_sequence_end = self.sequence_max_end_time.get((self.virtual_batch_id, row.sequence_id - 1), planned_start_floor)
-        base_start = max(prev_sequence_end, planned_start_floor)
-        
-        # Determine the earliest allowed start time based on prior sequence
+        # Look for latest end time of previous sequence in current batch
         if sequence_id > 1:
-            prev_sequence_end = sequence_times.get(sequence_id - 1)
-            if prev_sequence_end:
-                start_time = max(base_start, prev_sequence_end)
-            else:
-                start_time = base_start  # fallback
+            prev_sequence_end = sequence_times.get(sequence_id - 1, planned_start_floor)
         else:
-            start_time = base_start
+            prev_sequence_end = planned_start_floor
 
-        # Compute end time
+        start_time = max(prev_sequence_end, planned_start_floor)
         end_time = start_time + operation_duration
 
-        # Save
+        # Save to row
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
-        # Track latest end time for this sequence
-        current_latest = sequence_times.get(sequence_id)
-        if not current_latest or end_time > current_latest:
-            sequence_times[sequence_id] = end_time
+        # Update max end time tracker for this sequence
+        sequence_times[sequence_id] = max(sequence_times.get(sequence_id, end_time), end_time)
 
 
 
