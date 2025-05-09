@@ -215,7 +215,7 @@ class WorkOrder(ERPNextWorkOrder):
                         local_row.operation,
                         get_link_to_form("Manufacturing Settings", "Manufacturing Settings"),
                     ),
-                    ValidationError ,
+                    CapacityError  ,
                 )
 
             local_row.db_update()
