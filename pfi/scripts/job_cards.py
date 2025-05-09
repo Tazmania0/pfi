@@ -123,15 +123,8 @@ class WorkOrder(ERPNextWorkOrder):
 
     def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
         # Sort operations by sequence for batchwise planning
-        self.operations.sort(key=lambda x: x.sequence_id or 0)
-        self.batch_context = {
-                "current_batch": 0,
-                "current_sequence": None,
-                "batch_sequence_start": {},       # (batch, sequence): start_time
-                "sequence_max_end_per_batch": {},  # {batch: {sequence: end_time}}
-                "global_sequence_end": {},         # {sequence: max_end_time}
-                "last_qty": None,
-            }
+        #self.operations.sort(key=lambda x: x.sequence_id or 0)
+        
         
         for batch in self.batch_allocations:
             if batch.status != "Pending":
