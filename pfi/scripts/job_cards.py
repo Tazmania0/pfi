@@ -128,9 +128,9 @@ class WorkOrder(ERPNextWorkOrder):
                 "virtual_batch_id": 0,
                 "last_sequence_id": None,
                 "last_qty": None,
-                "sequence_max_end_per_batch": {},     # batch_id: {sequence_id: end}
-                "batch_max_end_by_sequence": {},      # (batch_id, sequence_id): end
-                "prev_seq_latest_end_per_batch": {},  # batch_id: latest end of previous sequence
+                "sequence_max_end_per_batch": {},     # batch_id: {sequence_id: latest end}
+                "batch_max_end_by_sequence": {},      # (batch_id, sequence_id): latest end across all jobs
+                "batch_prev_seq_end": {},             # batch_id: latest end of sequence_id - 1 ops in this batch
             }
         
         for batch in self.batch_allocations:
@@ -225,15 +225,14 @@ class WorkOrder(ERPNextWorkOrder):
         from datetime import datetime, timedelta
         from frappe.utils import get_datetime
 
-        # Initialize context
         if not hasattr(self, "batch_context"):
             self.batch_context = {
                 "virtual_batch_id": 0,
                 "last_sequence_id": None,
                 "last_qty": None,
-                "sequence_max_end_per_batch": {},     # batch_id: {sequence_id: end}
-                "batch_max_end_by_sequence": {},      # (batch_id, sequence_id): end
-                "prev_seq_latest_end_per_batch": {},  # batch_id: latest end of previous sequence
+                "sequence_max_end_per_batch": {},     # batch_id: {sequence_id: latest end}
+                "batch_max_end_by_sequence": {},      # (batch_id, sequence_id): latest end across all jobs
+                "batch_prev_seq_end": {},             # batch_id: latest end of sequence_id - 1 ops in this batch
             }
 
         ctx = self.batch_context
@@ -242,7 +241,7 @@ class WorkOrder(ERPNextWorkOrder):
         duration = timedelta(minutes=row.time_in_mins or 0)
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
 
-        # Detect new virtual batch
+        # New virtual batch detection
         is_new_batch = (
             ctx["last_sequence_id"] is None or
             ctx["last_sequence_id"] > sequence_id or
@@ -256,36 +255,34 @@ class WorkOrder(ERPNextWorkOrder):
         ctx["last_sequence_id"] = sequence_id
         ctx["last_qty"] = qty
 
-        # Init per-batch data
-        if batch_id not in ctx["sequence_max_end_per_batch"]:
-            ctx["sequence_max_end_per_batch"][batch_id] = {}
-        if batch_id not in ctx["prev_seq_latest_end_per_batch"]:
-            ctx["prev_seq_latest_end_per_batch"][batch_id] = datetime.min
+        ctx.setdefault("sequence_max_end_per_batch", {}).setdefault(batch_id, {})
+        ctx.setdefault("batch_prev_seq_end", {}).setdefault(batch_id, datetime.min)
 
-        # Get constraints
+        # Determine constraints
         same_seq_prev_batch_end = ctx["batch_max_end_by_sequence"].get((batch_id - 1, sequence_id), datetime.min)
-        prev_seq_end_same_batch = ctx["prev_seq_latest_end_per_batch"][batch_id] if sequence_id > 1 else datetime.min
+        prev_seq_end_same_batch = ctx["batch_prev_seq_end"][batch_id] if sequence_id > 1 else datetime.min
 
-        # Compute start time
+        # Final start time based on constraints
         start_time = max(planned_start_floor, same_seq_prev_batch_end, prev_seq_end_same_batch)
         end_time = start_time + duration
 
-        # Assign times
+        # Assign
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
-        # Update max end time for this sequence in this batch
+        # Update current sequence end for this batch
         ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = max(
             ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min),
             end_time
         )
-        ctx["batch_max_end_by_sequence"][(batch_id, sequence_id)] = \
-            ctx["sequence_max_end_per_batch"][batch_id][sequence_id]
+        ctx["batch_max_end_by_sequence"][(batch_id, sequence_id)] = ctx["sequence_max_end_per_batch"][batch_id][sequence_id]
 
-        # Update latest end time of all previous sequence ops in this batch
+        # If this is a previous sequence, update that constraint
         if sequence_id > 1:
-            prev_max = ctx["prev_seq_latest_end_per_batch"][batch_id]
-            ctx["prev_seq_latest_end_per_batch"][batch_id] = max(prev_max, end_time)
+            ctx["batch_prev_seq_end"][batch_id] = max(ctx["batch_prev_seq_end"][batch_id], end_time)
+
+
+
 
 
     def set_operation_start_end_time(self, idx, row):
