@@ -124,6 +124,7 @@ class WorkOrder(ERPNextWorkOrder):
     def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
         # Sort operations by sequence for batchwise planning
         self.operations.sort(key=lambda x: x.sequence_id or 0)
+        from datetime import datetime
         self.batch_context = {
                 "virtual_batch_id": 0,
                 "last_sequence_id": None,
