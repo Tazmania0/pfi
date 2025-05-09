@@ -128,7 +128,12 @@ class WorkOrder(ERPNextWorkOrder):
         self.last_sequence_id = None
         self.virtual_batch_id = 0
         self.sequence_active_rows = {}
-        self.batch_context = {}
+        self.batch_context = {
+            "virtual_batch_id": 0,
+            "last_sequence_id": None,
+            "latest_end_per_batch_sequence": {},
+            "start_time_per_batch_sequence": {},
+        }
         
         for batch in self.batch_allocations:
             if batch.status != "Pending":
