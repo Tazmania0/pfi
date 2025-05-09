@@ -129,11 +129,11 @@ class WorkOrder(ERPNextWorkOrder):
         self.virtual_batch_id = 0
         self.sequence_active_rows = {}
         self.batch_context = {
-            "virtual_batch_id": 0,
-            "last_sequence_id": None,
-            "latest_end_per_batch_sequence": {},
-            "start_time_per_batch_sequence": {},
-        }
+                "virtual_batch_id": 0,
+                "last_sequence_id": None,
+                "batch_max_end_by_sequence": {},  # {(batch_id, sequence_id): datetime}
+                "sequence_max_end_per_batch": {},  # {batch_id: {sequence_id: datetime}}
+            }
         
         for batch in self.batch_allocations:
             if batch.status != "Pending":
