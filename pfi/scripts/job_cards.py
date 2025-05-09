@@ -227,47 +227,56 @@ class WorkOrder(ERPNextWorkOrder):
         from datetime import datetime, timedelta
         from frappe.utils import get_datetime
 
+        # Initialization
         if not hasattr(self, "batch_context"):
             self.batch_context = {
                 "virtual_batch_id": 0,
                 "last_sequence_id": None,
-                "latest_end_per_batch_sequence": {},  # (vb, sequence) => end_time
-                "start_time_per_batch_sequence": {},  # (vb, sequence) => start_time
+                "batch_max_end_by_sequence": {},  # {(batch_id, sequence_id): datetime}
+                "sequence_max_end_per_batch": {},  # {batch_id: {sequence_id: datetime}}
             }
 
         ctx = self.batch_context
         sequence_id = row.sequence_id
         operation_duration = timedelta(minutes=row.time_in_mins or 0)
 
-        # Determine virtual batch id by checking for sequence restart
+        # Detect start of new virtual batch
         if ctx["last_sequence_id"] is not None and sequence_id < ctx["last_sequence_id"]:
             ctx["virtual_batch_id"] += 1
         ctx["last_sequence_id"] = sequence_id
-        vb = ctx["virtual_batch_id"]
+        batch_id = ctx["virtual_batch_id"]
 
-        # Planning floor start time
+        # Ensure dicts are initialized
+        if batch_id not in ctx["sequence_max_end_per_batch"]:
+            ctx["sequence_max_end_per_batch"][batch_id] = {}
+
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
 
-        # Use cached batch+sequence start if already determined
-        start_key = (vb, sequence_id)
-        if start_key in ctx["start_time_per_batch_sequence"]:
-            start_time = ctx["start_time_per_batch_sequence"][start_key]
+        # Determine earliest start time
+        prev_seq_end_same_batch = ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id - 1)
+        same_sequence_prev_batch_end = ctx["batch_max_end_by_sequence"].get((batch_id - 1, sequence_id))
+
+        start_time = planned_start_floor
+        if sequence_id == 1:
+            # First sequence: wait for previous batch's same sequence to finish (if any)
+            if same_sequence_prev_batch_end:
+                start_time = max(start_time, same_sequence_prev_batch_end)
         else:
-            # Determine start time from end of previous sequence
-            prev_end = ctx["latest_end_per_batch_sequence"].get((vb, sequence_id - 1), planned_start_floor)
-            start_time = max(planned_start_floor, prev_end)
-            ctx["start_time_per_batch_sequence"][start_key] = start_time
+            # Wait for previous sequence in same batch to finish
+            if prev_seq_end_same_batch:
+                start_time = max(start_time, prev_seq_end_same_batch)
 
         end_time = start_time + operation_duration
 
-        # Save times to the job row
+        # Assign calculated times
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
-        # Update latest end for this sequence in this batch
-        latest_key = (vb, sequence_id)
-        if latest_key not in ctx["latest_end_per_batch_sequence"] or end_time > ctx["latest_end_per_batch_sequence"][latest_key]:
-            ctx["latest_end_per_batch_sequence"][latest_key] = end_time
+        # Track max end times
+        ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = max(
+            ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min), end_time
+        )
+        ctx["batch_max_end_by_sequence"][(batch_id, sequence_id)] = ctx["sequence_max_end_per_batch"][batch_id][sequence_id]
 
 
     def set_operation_start_end_time(self, idx, row):
