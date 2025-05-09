@@ -127,6 +127,7 @@ class WorkOrder(ERPNextWorkOrder):
         self.sequence_max_end_time = {}
         self.last_sequence_id = None
         self.virtual_batch_id = 0
+        self.sequence_active_rows = {}
         
         for batch in self.batch_allocations:
             if batch.status != "Pending":
@@ -224,41 +225,49 @@ class WorkOrder(ERPNextWorkOrder):
             self.sequence_max_end_time = {}
             self.virtual_batch_id = 0
             self.last_sequence_id = None
+            self.sequence_active_rows = {}
 
         sequence_id = row.sequence_id
         operation_duration = timedelta(minutes=row.time_in_mins or 0)
 
-        # Virtual batch starts over when sequence_id drops
+        # Detect start of a new batch (sequence reset)
         if self.last_sequence_id is not None and sequence_id < self.last_sequence_id:
             self.virtual_batch_id += 1
 
         self.last_sequence_id = sequence_id
 
-        # Initialize tracking for this virtual batch if needed
-        if self.virtual_batch_id not in self.sequence_max_end_time:
-            self.sequence_max_end_time[self.virtual_batch_id] = {}
+        # Init batch tracking
+        vb = self.virtual_batch_id
+        if vb not in self.sequence_max_end_time:
+            self.sequence_max_end_time[vb] = {}
+            self.sequence_active_rows[vb] = {}
 
-        sequence_times = self.sequence_max_end_time[self.virtual_batch_id]
+        sequence_times = self.sequence_max_end_time[vb]
+        active_rows = self.sequence_active_rows[vb]
 
-        # Base planning start time
+        # Track rows per sequence (for debugging or batching)
+        if sequence_id not in active_rows:
+            active_rows[sequence_id] = []
+        active_rows[sequence_id].append(row)
+
+        # Find planned start floor (global)
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
 
-        # Look for latest end time of previous sequence in current batch
+        # Wait for prior sequence to fully finish
         if sequence_id > 1:
-            prev_sequence_end = sequence_times.get(sequence_id - 1, planned_start_floor)
+            prior_seq_end = sequence_times.get(sequence_id - 1, planned_start_floor)
         else:
-            prev_sequence_end = planned_start_floor
+            prior_seq_end = planned_start_floor
 
-        start_time = max(prev_sequence_end, planned_start_floor)
+        start_time = max(prior_seq_end, planned_start_floor)
         end_time = start_time + operation_duration
 
         # Save to row
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
-        # Update max end time tracker for this sequence
+        # Update the max end time for this sequence
         sequence_times[sequence_id] = max(sequence_times.get(sequence_id, end_time), end_time)
-
 
 
     def set_operation_start_end_time(self, idx, row):
