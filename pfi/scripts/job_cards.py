@@ -161,7 +161,7 @@ class WorkOrder(ERPNextWorkOrder):
     #Time calcaulation fix 
     def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
         from copy import deepcopy
-        import frappe
+        from erpnext.manufacturing.doctype.work_order.work_order import CapacityError
         from frappe.utils import date_diff , get_link_to_form
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
         #from collections import defaultdict
