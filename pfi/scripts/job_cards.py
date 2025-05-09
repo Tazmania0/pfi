@@ -128,8 +128,8 @@ class WorkOrder(ERPNextWorkOrder):
                 "virtual_batch_id": 0,
                 "last_sequence_id": None,
                 "last_qty": None,
-                "sequence_max_end_per_batch": {},  # {batch_id: {sequence_id: latest_end_time}}
-                "batch_max_end_by_sequence": {},   # {(batch_id, sequence_id): latest_end_time}
+                "sequence_max_end_per_batch": {},  # {batch_id: {sequence_id: latest_end_time}
+                "global_sequence_end": {},         # {sequence_id: latest_end_time_across_batches}
             }
         
         for batch in self.batch_allocations:
@@ -228,17 +228,22 @@ class WorkOrder(ERPNextWorkOrder):
                 "virtual_batch_id": 0,
                 "last_sequence_id": None,
                 "last_qty": None,
-                "sequence_max_end_per_batch": {},  # {batch_id: {sequence_id: latest_end_time}}
-                "batch_max_end_by_sequence": {},   # {(batch_id, sequence_id): latest_end_time}
+                "sequence_max_end_per_batch": {},  # {batch_id: {sequence_id: latest_end_time}
+                "global_sequence_end": {},         # {sequence_id: latest_end_time_across_batches}
             }
 
         ctx = self.batch_context
         sequence_id = row.sequence_id
         qty = row.job_card_qty
-        duration = timedelta(minutes=row.time_in_mins or 0)
+        time_per_unit = row.time_in_mins or 0
+
+        # FIX: Calculate duration based on quantity to manufacture
+        total_duration = time_per_unit * qty  # e.g., 2 mins/unit * 10 units = 20 mins
+        duration = timedelta(minutes=total_duration)
+
         planned_start_floor = get_datetime(getattr(self, "planned_start_date", None)) or datetime.now()
 
-        # Determine if this is a new virtual batch
+        # Detect new batch when sequence decreases or qty changes
         is_new_batch = (
             ctx["last_sequence_id"] is None or
             ctx["last_sequence_id"] > sequence_id or
@@ -253,17 +258,21 @@ class WorkOrder(ERPNextWorkOrder):
         ctx["last_sequence_id"] = sequence_id
         ctx["last_qty"] = qty
 
-        # Get the latest end time of the same sequence in the previous batch
-        same_seq_prev_batch_end = ctx["batch_max_end_by_sequence"].get((batch_id - 1, sequence_id), datetime.min)
-
-        # Get the latest end time of the previous sequence in the same batch
+        # Get dependencies for start time:
+        # 1. Previous sequence in the same batch
         prev_seq_same_batch = ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id - 1, datetime.min)
+        
+        # 2. Same sequence in the previous batch (global tracker)
+        same_seq_prev_batch = ctx["global_sequence_end"].get(sequence_id, datetime.min)
 
-        # Calculate start time
-        start_time = max(planned_start_floor, same_seq_prev_batch_end, prev_seq_same_batch)
+        # Start time is the latest of:
+        # - Planned start date
+        # - Previous sequence in the same batch
+        # - Same sequence in the previous batch
+        start_time = max(planned_start_floor, prev_seq_same_batch, same_seq_prev_batch)
         end_time = start_time + duration
 
-        # Update job card
+        # Update the job card
         row.planned_start_time = start_time
         row.planned_end_time = end_time
 
@@ -271,10 +280,13 @@ class WorkOrder(ERPNextWorkOrder):
         current_seq_max = ctx["sequence_max_end_per_batch"][batch_id].get(sequence_id, datetime.min)
         if end_time > current_seq_max:
             ctx["sequence_max_end_per_batch"][batch_id][sequence_id] = end_time
+        
+        # Track the global latest end time for this sequence across all batches
+        global_seq_max = ctx["global_sequence_end"].get(sequence_id, datetime.min)
+        if end_time > global_seq_max:
+            ctx["global_sequence_end"][sequence_id] = end_time
 
-        # Update global tracker for this sequence and batch
-        ctx["batch_max_end_by_sequence"][(batch_id, sequence_id)] = ctx["sequence_max_end_per_batch"][batch_id][sequence_id]
-
+        frappe.db.commit()
 
 
     def set_operation_start_end_time(self, idx, row):
