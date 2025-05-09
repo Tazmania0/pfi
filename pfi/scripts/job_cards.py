@@ -162,6 +162,7 @@ class WorkOrder(ERPNextWorkOrder):
     def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
         from copy import deepcopy
         from frappe.utils import date_diff
+        from frappe import get_link_to_form  # <-- Missing import added here
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
         #from collections import defaultdict
         
