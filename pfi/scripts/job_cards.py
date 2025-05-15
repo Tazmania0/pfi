@@ -201,18 +201,9 @@ class WorkOrder(ERPNextWorkOrder):
         else:
             local_row.time_in_mins = row.time_in_mins
         
-        # Group rows by sequence_id
-        #operations_by_sequence = defaultdict(list)
-        #for row in local_row:  # assuming local_operations is built earlier from bom_operations
-        #    operations_by_sequence[row.sequence_id].append(row)
-                
         
         # Use same logic as ERPNext to calculate time range
         self.set_operation_start_end_time(local_row,index)
-        
-        # Apply batchwise timing logic
-        #self.set_batchwise_operation_times(index, local_row)
-        
         
         
         # Create job card with adjusted time
@@ -241,9 +232,6 @@ class WorkOrder(ERPNextWorkOrder):
 
             #local_row.db_update()
             
-
-
-
 
 
     def set_operation_start_end_time(self, row, idx):
