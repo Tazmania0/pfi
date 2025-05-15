@@ -185,8 +185,8 @@ class WorkOrder(ERPNextWorkOrder):
         #from frappe.utils.data import flt
         
         # Work on a copy of the row to prevent modifying original operation
-        local_row = deepcopy(row)
-
+        #local_row = deepcopy(row)
+        local_row = row
         # Adjust time proportionally to the job_card_qty (which reflects batch qty)
         if float(self.qty):
             local_row.time_in_mins = max(
