@@ -325,10 +325,10 @@ class WorkOrder(ERPNextWorkOrder):
 
     """
     def set_operation_start_end_time(self, idx, row):
-        """
-        Override standard operation timing logic.
-        If this is called directly (not in batchwise mode), fall back to original logic.
-        """
+        
+        #Override standard operation timing logic.
+        #If this is called directly (not in batchwise mode), fall back to original logic.
+        
         from frappe.utils import get_datetime
         from dateutil.relativedelta import relativedelta
         from erpnext.manufacturing.doctype.work_order.work_order import get_mins_between_operations
