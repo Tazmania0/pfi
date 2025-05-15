@@ -238,7 +238,7 @@ class WorkOrder(ERPNextWorkOrder):
                     CapacityError  ,
                 )
 
-            local_row.db_update()
+            #local_row.db_update()
             
 
 
