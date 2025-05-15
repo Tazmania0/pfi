@@ -194,7 +194,7 @@ class WorkOrder(ERPNextWorkOrder):
         # Adjust time proportionally to the job_card_qty (which reflects batch qty)
         if float(self.qty):
             # Compute proportional time in minutes
-            proportional_time = float(row.time_in_mins) * float(row.job_card_qty) / (float(self.qty) * float (row.batch_size)
+            proportional_time = float(row.time_in_mins) * float(row.job_card_qty) / (float(self.qty) * float (row.batch_size))
             # Round to seconds, but store as minutes with high precision (e.g., 0.25 for 15 seconds)
             local_row.time_in_mins = round(proportional_time * 60) / 60  # round to nearest second
         else:
