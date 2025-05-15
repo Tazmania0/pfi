@@ -158,7 +158,7 @@ class WorkOrder(ERPNextWorkOrder):
                 
                 # Use ERPNext logic to calculate time range 
                 self.set_operation_start_end_time(row,index)
-                frappe.db.commit()
+                row.db_update()
                 
                 
                 if batch.batch_qty > 0:
