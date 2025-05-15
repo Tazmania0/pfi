@@ -156,8 +156,10 @@ class WorkOrder(ERPNextWorkOrder):
             
             for index, row in enumerate(self.operations):
                 
-                # Update starting - ending date 
+                # Use ERPNext logic to calculate time range 
                 self.set_operation_start_end_time(row,index)
+                frappe.db.commit()
+                
                 
                 if batch.batch_qty > 0:
                     temp_qty = batch.batch_qty
@@ -186,10 +188,6 @@ class WorkOrder(ERPNextWorkOrder):
         from frappe.utils import date_diff , get_link_to_form
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
 
-        #from collections import defaultdict
-        
-        #from frappe.utils.data import flt
-        
         # Work on a copy of the row to prevent modifying original operation
         local_row = deepcopy(row)
         #local_row = row
