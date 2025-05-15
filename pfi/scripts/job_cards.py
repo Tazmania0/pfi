@@ -155,6 +155,10 @@ class WorkOrder(ERPNextWorkOrder):
             
             
             for index, row in enumerate(self.operations):
+                
+                # Update starting - ending date 
+                self.set_operation_start_end_time(row,index)
+                
                 if batch.batch_qty > 0:
                     temp_qty = batch.batch_qty
                     while temp_qty > 0:
