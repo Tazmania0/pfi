@@ -110,6 +110,16 @@ class WorkOrder(ERPNextWorkOrder):
             self.create_job_cards_from_batch_allocations(plan_days, enable_capacity_planning)
         else:
             # Default ERPNext logic
+            if all([op.sequence_id for op in self.operations]):
+                self.operations = sorted(self.operations, key=lambda op: op.sequence_id)
+                for idx, op in enumerate(self.operations):
+                    op.idx = idx + 1
+            elif any([op.sequence_id for op in self.operations]):
+                frappe.throw(
+                    _(
+                        "Row #{0}: Incorrect Sequence ID. If any single operation has a Sequence ID then all other operations must have one too."
+                    ).format(next((op.idx for op in self.operations if not op.sequence_id), None))
+                )
             for index, row in enumerate(self.operations):
                 qty = self.qty
                 while qty > 0:
@@ -120,7 +130,8 @@ class WorkOrder(ERPNextWorkOrder):
         planned_end_date = self.operations and self.operations[-1].planned_end_time
         if planned_end_date:
             self.db_set("planned_end_date", planned_end_date)
-
+            
+            
     def create_job_cards_from_batch_allocations(self, plan_days, enable_capacity_planning):
         # Sort operations by sequence for batchwise planning
         #self.operations.sort(key=lambda x: x.sequence_id or 0)
@@ -129,7 +140,19 @@ class WorkOrder(ERPNextWorkOrder):
         for batch in self.batch_allocations:
             if batch.status != "Pending":
                 continue
-
+            if all([op.sequence_id for op in self.operations]):
+                self.operations = sorted(self.operations, key=lambda op: op.sequence_id)
+                for idx, op in enumerate(self.operations):
+                    op.idx = idx + 1
+            elif any([op.sequence_id for op in self.operations]):
+                frappe.throw(
+                    _(
+                        "Row #{0}: Incorrect Sequence ID. If any single operation has a Sequence ID then all other operations must have one too."
+                    ).format(next((op.idx for op in self.operations if not op.sequence_id), None))
+                )
+            
+            
+            
             for index, row in enumerate(self.operations):
                 if batch.batch_qty > 0:
                     temp_qty = batch.batch_qty
@@ -300,6 +323,7 @@ class WorkOrder(ERPNextWorkOrder):
 
 
 
+"""
     def set_operation_start_end_time(self, idx, row):
         """
         Override standard operation timing logic.
@@ -322,3 +346,4 @@ class WorkOrder(ERPNextWorkOrder):
 
         if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Capacity Planning Error, planned start time can not be same as end time"))
+"""            
