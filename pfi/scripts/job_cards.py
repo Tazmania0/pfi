@@ -180,6 +180,7 @@ class WorkOrder(ERPNextWorkOrder):
         from erpnext.manufacturing.doctype.work_order.work_order import CapacityError
         from frappe.utils import date_diff , get_link_to_form
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
+        from erpnext.manufacturing.doctype.work_order.work_order import set_operation_start_end_time as set_operation_start_end_time_standalone
         #from collections import defaultdict
         
         #from frappe.utils.data import flt
@@ -203,7 +204,7 @@ class WorkOrder(ERPNextWorkOrder):
                 
         
         # Use same logic as ERPNext to calculate time range
-        self.set_operation_start_end_time(local_row,index)
+        self.set_operation_start_end_time_standalone(local_row,index)
         
         # Apply batchwise timing logic
         #self.set_batchwise_operation_times(index, local_row)
