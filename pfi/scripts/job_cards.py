@@ -323,7 +323,7 @@ class WorkOrder(ERPNextWorkOrder):
 
 
 
-"""
+    """
     def set_operation_start_end_time(self, idx, row):
         """
         Override standard operation timing logic.
@@ -346,4 +346,4 @@ class WorkOrder(ERPNextWorkOrder):
 
         if row.planned_start_time == row.planned_end_time:
             frappe.throw(_("Capacity Planning Error, planned start time can not be same as end time"))
-"""            
+    """            
