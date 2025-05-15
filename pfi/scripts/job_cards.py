@@ -320,7 +320,33 @@ class WorkOrder(ERPNextWorkOrder):
 
         frappe.db.commit()
 
+    def set_operation_start_end_time(self, row, idx):
+            """Set start and end time for given operation. If first operation, set start as
+            `planned_start_date`, else add time diff to end time of earlier operation."""
+            if idx == 0:
+                # first operation at planned_start date
+                row.planned_start_time = self.planned_start_date
+            elif self.operations[idx - 1].sequence_id:
+                if self.operations[idx - 1].sequence_id == row.sequence_id:
+                    row.planned_start_time = self.operations[idx - 1].planned_start_time
+                else:
+                    last_ops_with_same_sequence_ids = sorted(
+                        [op for op in self.operations if op.sequence_id == self.operations[idx - 1].sequence_id],
+                        key=lambda op: get_datetime(op.planned_end_time),
+                    )
+                    row.planned_start_time = (
+                        get_datetime(last_ops_with_same_sequence_ids[-1].planned_end_time)
+                        + get_mins_between_operations()
+                    )
+            else:
+                row.planned_start_time = (
+                    get_datetime(self.operations[idx - 1].planned_end_time) + get_mins_between_operations()
+                )
 
+            row.planned_end_time = get_datetime(row.planned_start_time) + relativedelta(minutes=row.time_in_mins)
+
+            if row.planned_start_time == row.planned_end_time:
+                frappe.throw(_("Capacity Planning Error, planned start time can not be same as end time"))
 
 
     """
