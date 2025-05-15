@@ -176,7 +176,7 @@ class WorkOrder(ERPNextWorkOrder):
     
     #Time calcaulation fix 
     def prepare_data_for_job_card_batchwise(self, row, index, plan_days, enable_capacity_planning):
-        from copy import deepcopy
+        #from copy import deepcopy
         from erpnext.manufacturing.doctype.work_order.work_order import CapacityError
         from frappe.utils import date_diff , get_link_to_form
         from erpnext.manufacturing.doctype.work_order.work_order import create_job_card as create_job_card_standalone
@@ -189,10 +189,10 @@ class WorkOrder(ERPNextWorkOrder):
         local_row = row
         # Adjust time proportionally to the job_card_qty (which reflects batch qty)
         if float(self.qty):
-            local_row.time_in_mins = max(
-                1,
-                float(row.time_in_mins) * float(row.job_card_qty) / float(self.qty)
-            )
+            # Compute proportional time in minutes
+            proportional_time = float(row.time_in_mins) * float(row.job_card_qty) / float(self.qty)
+            # Round to seconds, but store as minutes with high precision (e.g., 0.25 for 15 seconds)
+            local_row.time_in_mins = round(proportional_time * 60) / 60  # round to nearest second
         else:
             local_row.time_in_mins = row.time_in_mins
         
