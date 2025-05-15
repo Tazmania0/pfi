@@ -250,6 +250,8 @@ class WorkOrder(ERPNextWorkOrder):
     def set_operation_start_end_time(self, row, idx):
             """Set start and end time for given operation. If first operation, set start as
             `planned_start_date`, else add time diff to end time of earlier operation."""
+            from erpnext.manufacturing.doctype.manufacturing_settings.manufacturing_settings import get_mins_between_operations
+            
             if idx == 0:
                 # first operation at planned_start date
                 row.planned_start_time = self.planned_start_date
