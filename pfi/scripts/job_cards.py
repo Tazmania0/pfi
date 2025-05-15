@@ -93,7 +93,7 @@ def validate_job_card(doc, method):
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt, date_diff, get_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERPNextWorkOrder
 from erpnext.manufacturing.doctype.work_order.work_order import split_qty_based_on_batch_size
 
