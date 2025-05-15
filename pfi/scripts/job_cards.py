@@ -90,9 +90,7 @@ def validate_job_card(doc, method):
 # - Fieldname: batch_allocations
 # - Options: Batch Allocation
 
-import frappe
 from frappe import _
-from frappe.model.document import Document
 from dateutil.relativedelta import relativedelta
 from frappe.utils import cint, flt, date_diff, get_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as ERPNextWorkOrder
