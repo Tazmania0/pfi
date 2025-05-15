@@ -203,7 +203,7 @@ class WorkOrder(ERPNextWorkOrder):
                 
         
         # Use same logic as ERPNext to calculate time range
-        self.set_operation_start_end_time(index, local_row)
+        self.set_operation_start_end_time(local_row,index)
         
         # Apply batchwise timing logic
         #self.set_batchwise_operation_times(index, local_row)
