@@ -47,8 +47,8 @@
 },
 {
   "doctype": "Report",
-  "report_name": "Executions - f2",
-  "name": "Executions - f2",
+  "report_name": "Executions",
+  "name": "Executions",
   "ref_doctype": "Job Card",
   "report_type": "Query Report",
   "is_standard": "No",
