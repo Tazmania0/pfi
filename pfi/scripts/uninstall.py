@@ -1,7 +1,7 @@
 import frappe
 
 def remove_custom_reports():
-    report_name = "Executions - f2"
+    report_name = "Executions"
     try:
         frappe.delete_doc("Report", report_name, force=True)
         frappe.db.commit()
