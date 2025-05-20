@@ -1,3 +1,17 @@
+//Create namespaces pfi
+frappe.privide("pfi");
+
+//Fetch overproduction percentage 
+frappe.db.get_single_value('Manufacturing Settings', 'overproduction_percentage_for_work_order')
+  .then(value => {
+    // Store it globally if needed
+    frappe.pfi = frappe.pfi || {};
+    frappe.pfi.overproduction_percentage = flt(value || 0);
+
+    console.log('Overproduction Percentage:', frappe.pfi.overproduction_percentage);
+  });
+  
+  
 frappe.ui.form.on('Work Order', {
     onload(frm) {
         console.log("WORKORDER: onload!");
@@ -81,8 +95,8 @@ function update_batch_allocation_summary(frm) {
         total_allocated += flt(row.batch_qty);
     });
 
-    const overproduction_percentage = flt(frappe.sys_defaults.overproduction_percentage_for_work_order) || 0;
-    const allowed_qty = flt(frm.doc.qty) * (1 + overproduction_percentage / 100);
+    
+    const allowed_qty = Math.floor(flt(frm.doc.qty) * (1 + frappe.pfi.overproduction_percentage / 100));
     const remaining_qty = allowed_qty - total_allocated;
 
     const html = `
