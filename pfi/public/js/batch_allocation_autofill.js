@@ -58,7 +58,7 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
     if (row.batch_qty && row.batch_qty > 0) {
         const total_with_current = sum + row.batch_qty;
         const overproduction_qty = total_qty * (flt(frappe.sys_defaults.overproduction_percentage_for_work_order) || 0) / 100;
-		
+		console.log("Overproduction qty: {0}",[overproduction_qty]);
 		if (total_with_current > (total_qty + overproduction_qty ))  {
             const exceeded = total_with_current - total_qty - overproduction_qty ;
             frappe.msgprint(__('Total allocated quantity exceeds the Work Order quantity by {0}.', [exceeded]));
