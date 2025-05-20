@@ -104,7 +104,7 @@ function update_batch_allocation_summary(frm) {
             <div style="display: flex; justify-content: space-between; align-items: center">
                 <div>
 	    	    <strong>Batch Allocation Summary:</strong><br>
-		    Allocated: <strong>${total_allocated}</strong> / Allowed: <strong>${allowed_qty} : (${allowed_qty - flt(frm.doc.qty)}) </strong>
+		    Allocated: <strong>${total_allocated}</strong> / Allowed: <strong>${allowed_qty}{${allowed_qty - flt(frm.doc.qty)}} </strong>
 		    (${remaining_qty >= 0 ? 'Remaining' : 'Exceeded'}: <strong style="color: ${remaining_qty >= 0 ? 'green' : 'red'}">${remaining_qty}</strong>)
         	</div>
 		<button class="btn btn-default btn-xs recalculate-batch-summary" type="button" 
