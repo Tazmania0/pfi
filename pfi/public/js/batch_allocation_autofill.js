@@ -58,7 +58,7 @@ frappe.ui.form.on('Batch Allocation', {
 function auto_fill_remaining_qty(frm, cdt, cdn) {
     const row = locals[cdt][cdn];
     const total_qty = frm.doc.qty || 0;
-	const total_qty1 = Math.floor(total_qty * ( 1 + frappe.pfi.overproduction_percentage ) / 100);
+	const total_qty1 = Math.floor((total_qty * ( 1 + frappe.pfi.overproduction_percentage / 100);
 	
 	console.log("New total qty:", total_qty1, "Old total qty", total_qty);
 
