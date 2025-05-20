@@ -1,5 +1,5 @@
 //Create namespaces pfi
-frappe.privide("pfi");
+frappe.provide("pfi");
 
 //Fetch overproduction percentage 
 frappe.db.get_single_value('Manufacturing Settings', 'overproduction_percentage_for_work_order')
