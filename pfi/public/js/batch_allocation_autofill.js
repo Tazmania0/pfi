@@ -57,16 +57,8 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
     // If value already exists, validate it
     if (row.batch_qty && row.batch_qty > 0) {
         const total_with_current = sum + row.batch_qty;
-		frappe.db.get_single_value('Manufacturing Settings', 'overproduction_percentage_for_work_order')
-		.then(value => {
-        const overproductionPercentage = flt(value) || 0;
-        console.log('Overproduction Percentage:', overproductionPercentage);
-		});
-		
-        const overproduction_qty = Math.floor(total_qty * overproductionPercentage / 100);
-		console.log("Overproduction qty:",overproduction_qty);
-		if (total_with_current > (total_qty + overproduction_qty ))  {
-            const exceeded = total_with_current - total_qty - overproduction_qty ;
+        if (total_with_current > total_qty) {
+            const exceeded = total_with_current - total_qty;
             frappe.msgprint(__('Total allocated quantity exceeds the Work Order quantity by {0}.', [exceeded]));
         }
         return;
