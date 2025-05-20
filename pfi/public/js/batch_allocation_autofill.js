@@ -60,7 +60,7 @@ function auto_fill_remaining_qty(frm, cdt, cdn) {
     const total_qty = frm.doc.qty || 0;
 	const total_qty1 = Math.floor(total_qty * ( 1 + frappe.pfi.overproduction_percentage ) / 100);
 	
-	console.log("New total qty:", total_qty1);
+	console.log("New total qty:", total_qty1, "Old total qty", total_qty);
 
     let sum = 0;
     (frm.doc.batch_allocations || []).forEach(b => {
